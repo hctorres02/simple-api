@@ -39,12 +39,24 @@ function generate_tables()
     return $tables;
 }
 
-function generate_columns(string $resource)
+function generate_columns(string $resource, bool $filter_columns = false)
 {
-    global $tables;
+    global $tables, $excluded;
 
     $columns = $tables[$resource];
+
+    if ($filter_columns) {
+        $columns = array_map(function ($v) use ($excluded) {
+            foreach ($excluded as $item) {
+                if (strpos($v, $item) === false) {
+                    return $v;
+                }
+            }
+        }, $columns);
+    }
+
     $columns = plain_array($columns);
+    $columns = str_replace(',,', ',', $columns);
 
     return $columns;
 }
@@ -75,7 +87,7 @@ function select_data(?int $id, string $join = null)
 {
     global $db, $foreign, $resource;
 
-    $host_columns = generate_columns($resource);
+    $host_columns = generate_columns($resource, true);
     $sql = "SELECT {$host_columns}
             FROM {$resource}";
 
@@ -105,7 +117,7 @@ function insert_data(array $data)
 {
     global $db, $resource;
 
-    $columns = generate_columns($resource);
+    $columns = generate_columns($resource, true);
     $escaped_data = array_map('escape_data', $data);
     $values = plain_array($escaped_data);
     $sql = "INSERT INTO {$resource} ({$columns})

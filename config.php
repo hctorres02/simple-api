@@ -14,3 +14,7 @@ $aliases = [
     'posts' => 'post',
     'users' => 'user'
 ];
+
+$excluded = [
+    'password'
+];
