@@ -1,0 +1,14 @@
+{
+    "name": "hctorres02/simple-api",
+    "description": "A simple API",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "HC Torres",
+            "email": "hctorres02@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
