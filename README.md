@@ -10,7 +10,7 @@ $user  =  'root';
 $pass  =  '';
 ```
 
-* Set `$tables` array mirror from your database:
+* Set `$tables` array as mirror from your database:
 ```
 $tables  = [
   'users' => ['id', 'name', 'email', 'password', 'active']
@@ -18,7 +18,7 @@ $tables  = [
 ```
 
 ## Usage
-_This version doesn't use `friedly URLs`._
+_This version doesn't use `friendly URLs`._
 
 * GET: `index.php?resource={table_name}`
 * GET: `index.php?resource={table_name}&id={id}`
