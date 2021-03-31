@@ -59,7 +59,7 @@ function escape_data(string $value)
     return "'{$value}'";
 }
 
-function retrieve_data()
+function request_body()
 {
     $input = file_get_contents('php://input');
     $data = json_decode($input, true);
@@ -81,7 +81,9 @@ function select_data(?int $id)
 
     $stmt = $db->prepare($sql);
     $stmt->execute();
-    $result = $stmt->fetchAll();
+    $result = $id
+        ? $stmt->fetch()
+        : $stmt->fetchAll();
 
     return $result;
 }
