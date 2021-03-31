@@ -16,6 +16,26 @@ function plain_array($arr)
     return implode(',', $arr);
 }
 
+function generate_tables()
+{
+    global $db, $dbname;
+
+    $sql = "SELECT table_name, column_name
+            FROM information_schema.columns 
+            WHERE table_schema = '{$dbname}'
+            ORDER BY table_name, ordinal_position";
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute();
+    $result = $stmt->fetchAll();
+
+    foreach ($result as $row) {
+        $tables[$row['table_name']][] = strtolower($row['column_name']);
+    }
+
+    return $tables;
+}
+
 function generate_columns($resource)
 {
     global $tables;

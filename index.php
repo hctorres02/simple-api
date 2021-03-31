@@ -15,6 +15,8 @@ try {
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
+    $tables = generate_tables();
+
     if (!$resource) {
         http_status(400, 'resource is required');
     }
@@ -27,7 +29,7 @@ try {
         case 'GET':
             $data = select_data($id);
 
-            if (!$data) {
+            if ($id && !$data) {
                 http_status(404, []);
             }
 
