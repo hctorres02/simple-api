@@ -86,9 +86,9 @@ function select_data(?int $id)
     return $result;
 }
 
-function insert_data()
+function insert_data(array $data)
 {
-    global $db, $resource, $data;
+    global $db, $resource;
 
     $columns = generate_columns($resource);
     $escaped_data = array_map('escape_data', $data);
@@ -103,9 +103,9 @@ function insert_data()
     return $result;
 }
 
-function update_data(int $id)
+function update_data(int $id, array $data)
 {
-    global $db, $resource, $data;
+    global $db, $resource;
 
     $column_data = generate_column_data($data);
     $values = plain_array($column_data);
@@ -117,7 +117,7 @@ function update_data(int $id)
     $stmt->execute();
     $result = $stmt->rowCount();
 
-    return (bool)$result;
+    return (bool) $result;
 }
 
 function delete_data(int $id)
@@ -131,5 +131,5 @@ function delete_data(int $id)
     $stmt->execute();
     $result = $stmt->rowCount();
 
-    return (bool)$result;
+    return (bool) $result;
 }

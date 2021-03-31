@@ -4,7 +4,7 @@ header('content-type: application/json; charset=utf-8');
 
 $request_method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
 $resource = filter_input(INPUT_GET, 'resource', FILTER_SANITIZE_STRING);
-$id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
+$id = (int) filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
 
 include('config.php');
 include('functions.php');
@@ -47,7 +47,7 @@ try {
                 http_status(403, 'DATA is required');
             }
 
-            $id = insert_data();
+            $id = insert_data($data);
 
             http_status(201, select_data($id));
             break;
@@ -63,7 +63,7 @@ try {
                 http_status(400, 'ID is required');
             }
 
-            $success = update_data($id);
+            $success = update_data($id, $data);
 
             if (!$success) {
                 http_status(404, false);
