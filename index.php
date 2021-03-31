@@ -29,27 +29,43 @@ try {
         case 'GET':
             $data = select_data($id);
 
-            if ($id && !$data) {
-                http_status(404, []);
+            if (!$data) {
+                if ($id) {
+                    http_status(404, []);
+                }
+
+                http_status(204, []);
             }
 
             http_status(200, $data);
             break;
 
         case 'POST':
+            $data = retrieve_data();
+
+            if (!$data) {
+                http_status(403, 'DATA is required');
+            }
+
             $id = insert_data();
 
             http_status(201, select_data($id));
             break;
 
         case 'PUT':
+            $data = retrieve_data();
+
+            if (!$data) {
+                http_status(403, 'DATA is required');
+            }
+
             if (!$id) {
                 http_status(400, 'ID is required');
             }
 
-            $result = update_data($id);
+            $success = update_data($id);
 
-            if (!$result) {
+            if (!$success) {
                 http_status(404, false);
             }
 
@@ -61,9 +77,9 @@ try {
                 http_status(400, 'ID is required');
             }
 
-            $result = delete_data($id);
+            $success = delete_data($id);
 
-            if (!$result) {
+            if (!$success) {
                 http_status(404, false);
             }
 

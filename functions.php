@@ -36,13 +36,16 @@ function generate_tables()
     return $tables;
 }
 
-function generate_columns($resource)
+function generate_columns(string $resource)
 {
     global $tables;
-    return plain_array($tables[$resource]);
+
+    $columns = plain_array($tables[$resource]);
+
+    return $columns;
 }
 
-function generate_column_data($data)
+function generate_column_data(array $data)
 {
     foreach ($data as $key => $value) {
         $values[] = "{$key}='{$value}'";
@@ -51,7 +54,7 @@ function generate_column_data($data)
     return $values;
 }
 
-function escape_data($value)
+function escape_data(string $value)
 {
     return "'{$value}'";
 }
@@ -59,17 +62,18 @@ function escape_data($value)
 function retrieve_data()
 {
     $input = file_get_contents('php://input');
-    $json = json_decode($input, true);
+    $data = json_decode($input, true);
 
-    return $json;
+    return $data;
 }
 
-function select_data($id)
+function select_data(?int $id)
 {
     global $db, $resource;
 
     $columns = generate_columns($resource);
-    $sql = "SELECT {$columns} FROM {$resource}";
+    $sql = "SELECT {$columns}
+            FROM {$resource}";
 
     if ($id) {
         $sql = "{$sql} WHERE id={$id}";
@@ -84,52 +88,45 @@ function select_data($id)
 
 function insert_data()
 {
-    global $db, $resource;
+    global $db, $resource, $data;
 
     $columns = generate_columns($resource);
-    $data = retrieve_data();
-
-    if (!$data) {
-        http_status(403, 'DATA is required');
-    }
-
     $escaped_data = array_map('escape_data', $data);
     $values = plain_array($escaped_data);
+    $sql = "INSERT INTO {$resource} ({$columns})
+            VALUES (null,{$values})";
 
-    $sql = "INSERT INTO {$resource} ({$columns}) VALUES (null,{$values})";
     $stmt = $db->prepare($sql);
     $stmt->execute();
-
     $result = $db->lastInsertId();
 
     return $result;
 }
 
-function update_data($id)
+function update_data(int $id)
 {
-    global $db, $resource;
-
-    $data = retrieve_data();
-
-    if (!$data) {
-        http_status(403, 'DATA is required');
-    }
+    global $db, $resource, $data;
 
     $column_data = generate_column_data($data);
     $values = plain_array($column_data);
+    $sql = "UPDATE {$resource}
+            SET {$values}
+            WHERE id={$id}";
 
-    $sql = "UPDATE {$resource} SET {$values} WHERE id={$id}";
     $stmt = $db->prepare($sql);
-    $result = $stmt->execute();
+    $stmt->execute();
+    $result = $stmt->rowCount();
 
-    return $result;
+    return (bool)$result;
 }
 
-function delete_data($id)
+function delete_data(int $id)
 {
     global $db, $resource;
 
-    $sql = "DELETE FROM {$resource} WHERE id={$id}";
+    $sql = "DELETE FROM {$resource}
+            WHERE id={$id}";
+
     $stmt = $db->prepare($sql);
     $stmt->execute();
     $result = $stmt->rowCount();
