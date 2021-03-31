@@ -20,7 +20,7 @@ $tables  = [
 ## Usage
 _This version doesn't use `friedly URLs`._
 
-* GET: `index.php?resoource={table_name}`
+* GET: `index.php?resource={table_name}`
 * GET: `index.php?resource={table_name}&id={id}`
 
 Use HTTP verbs to `create`, `update` or `delete`.
