@@ -4,6 +4,7 @@ header('content-type: application/json; charset=utf-8');
 
 $request_method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
 $resource = filter_input(INPUT_GET, 'resource', FILTER_SANITIZE_STRING);
+$join = filter_input(INPUT_GET, 'join', FILTER_SANITIZE_STRING);
 $id = (int) filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
 
 include('config.php');
@@ -27,7 +28,7 @@ try {
 
     switch ($request_method) {
         case 'GET':
-            $data = select_data($id);
+            $data = select_data($id, $join);
 
             if (!$data && $id) {
                 http_status(404, []);

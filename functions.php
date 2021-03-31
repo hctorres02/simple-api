@@ -11,14 +11,14 @@ function http_status(int $code, $data = null)
     exit;
 }
 
-function plain_array($arr)
+function plain_array(array $arr, string $glue = ',')
 {
-    return implode(',', $arr);
+    return implode($glue, $arr);
 }
 
 function generate_tables()
 {
-    global $db, $dbname;
+    global $db, $dbname, $aliases;
 
     $sql = "SELECT table_name, column_name
             FROM information_schema.columns 
@@ -30,7 +30,10 @@ function generate_tables()
     $result = $stmt->fetchAll();
 
     foreach ($result as $row) {
-        $tables[$row['table_name']][] = strtolower($row['column_name']);
+        $table = $row['table_name'];
+        $column = $row['column_name'];
+        $alias = "{$table}.{$column} AS {$aliases[$table]}_{$row['column_name']}";
+        $tables[$table][] = strtolower($alias);
     }
 
     return $tables;
@@ -40,7 +43,8 @@ function generate_columns(string $resource)
 {
     global $tables;
 
-    $columns = plain_array($tables[$resource]);
+    $columns = $tables[$resource];
+    $columns = plain_array($columns);
 
     return $columns;
 }
@@ -67,23 +71,32 @@ function request_body()
     return $data;
 }
 
-function select_data(?int $id)
+function select_data(?int $id, string $join = null)
 {
-    global $db, $resource;
+    global $db, $foreign, $resource;
 
-    $columns = generate_columns($resource);
-    $sql = "SELECT {$columns}
+    $host_columns = generate_columns($resource);
+    $sql = "SELECT {$host_columns}
             FROM {$resource}";
 
+    if ($join) {
+        $join_columns = generate_columns($join);
+        $on = plain_array($foreign[$join], '=');
+        $sql = "SELECT {$host_columns},{$join_columns}
+                FROM {$resource}
+                JOIN {$join}
+                ON {$on}";
+    }
+
     if ($id) {
-        $sql = "{$sql} WHERE id={$id}";
+        $sql = $join
+            ? "{$sql} WHERE {$foreign[$join][0]}={$id}"
+            : "{$sql} WHERE id={$id}";
     }
 
     $stmt = $db->prepare($sql);
     $stmt->execute();
-    $result = $id
-        ? $stmt->fetch()
-        : $stmt->fetchAll();
+    $result = $stmt->fetchAll();
 
     return $result;
 }
