@@ -1,4 +1,4 @@
-# Simple-API
+# Simple-API (v0.2.1)
 _A simple API (serious?)_
 
 ## Configuration:
@@ -12,6 +12,8 @@ $pass  =  '';
 ```
 
 > Now it is no longer necessary to inform your database schema, Simple API will read this information from the informed database using `information_schema.columns`.
+
+> Your database schema will be stored at server session, using PHP SESSIONS. If your alter your database, needs to clean the sessions informations to application rebuild the database schema. Also required if you change anything on `config.php`.
 
 Hide sensitive columns:
 ```
@@ -39,10 +41,9 @@ $aliases = [
 
 _This version doesn't use `friendly URLs`._
 
-* GET `index.php?table={table_name}`
-* GET `index.php?table={table_name}&id={id}`
-* GET `index.php?table={table_name}&join={foreign}`
-* GET `index.php?table={table_name}&join={foreign}&id={id}`
+* GET `index.php?endpoint={host_table}`
+* GET `index.php?endpoint={host_table}/{id}`
+* GET `index.php?endpoint={host_table}/{id}/{foreign_table}`
 
 Use HTTP verbs to `create`, `update` or `delete`.
 
