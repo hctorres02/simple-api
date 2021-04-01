@@ -51,9 +51,9 @@ function insert_data(string $table, array $data)
     return $result;
 }
 
-function update_data(int $id, array $data)
+function update_data(string $table, int $id, array $data)
 {
-    global $db, $table;
+    global $db;
 
     $values = escape_column_value($data);
     $sql = "UPDATE {$table}
@@ -67,9 +67,9 @@ function update_data(int $id, array $data)
     return (bool) $result;
 }
 
-function delete_data(int $id)
+function delete_data(string $table, int $id)
 {
-    global $db, $table;
+    global $db;
 
     $sql = "DELETE FROM {$table}
             WHERE id={$id}";
