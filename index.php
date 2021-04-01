@@ -17,7 +17,6 @@ if (!$table) {
 }
 
 try {
-    $db = database($dsn, $user, $pass);
     $schema = get_schema($db);
     $tables = storage_get('tables');
     $foreign = storage_get('foreign');

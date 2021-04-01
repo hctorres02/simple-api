@@ -1,13 +1,23 @@
 <?php
 
-function database($dsn, $user, $pass)
+class DB
 {
-    $options = [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-    ];
+    private static $pdo;
 
-    $pdo = new PDO($dsn, $user, $pass, $options);
+    public function __construct($dsn, $user, $pass)
+    {
+        $options = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+        ];
 
-    return $pdo;
+        self::$pdo = new PDO($dsn, $user, $pass, $options);
+    }
+
+    public static function connection()
+    {
+        return self::$pdo;
+    }
 }
+
+$db = (new DB($dsn, $user, $pass))::connection();
