@@ -1,34 +1,33 @@
-# Simple-API (v0.2.6)
+# Simple-API (v0.3)
 _A simple API (serious?)_
 
 ## Configuration:
 
-Update `config.php` file with your database infos:
+Update `.env` file with your database infos:
 ```
-$host  =  'localhost';
-$dbname  =  'simple-api';
-$user  =  'root';
-$pass  =  '';
+host = 'localhost';
+dbname = 'simple-api';
+user = 'root';
+pass = '';
 ```
 
-> Now it is no longer necessary to inform your database schema, Simple API will read this information from the informed database using `information_schema.columns`.
-
-> Your database schema will be stored at server session, using `PHP SESSIONS`. If your alter your database, needs to clean the sessions informations to application rebuild the database schema. Also required if you change anything on `config.php`.
+> Simple API will read this information from the informed database using `information_schema.columns`. The database schema will be stored at server session, using `PHP SESSIONS`.
 
 Hide sensitive columns:
 ```
-$excluded = [
-    'password'
-];
+[excluded]
+0=password
 ```
 
 Bind columns aliases (JOIN) | (a.k.a singular)
 ```
-$aliases = [
-    'posts' => 'post',
-    'users' => 'user'
-];
+[aliases]
+posts = post
+users = user
 ```
+
+> If your alter your database, needs to clean the sessions informations to application rebuild the database schema. Also required if you change anything on `.env`.
+
 ## Usage
 
 _This version doesn't use `friendly URLs`._
