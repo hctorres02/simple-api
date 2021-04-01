@@ -19,7 +19,13 @@ function request_body()
     return $data;
 }
 
-function escape_data(string $value)
+function escape_data(array $data)
 {
-    return "'{$value}'";
+    $data = array_map(function ($value) {
+        return "'{$value}'";
+    }, $data);
+
+    $data = implode(',', $data);
+
+    return $data;
 }

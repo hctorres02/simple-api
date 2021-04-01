@@ -40,8 +40,7 @@ function insert_data(string $table, array $data)
     global $db;
 
     $columns = get_columns($table, false, false);
-    $escaped_data = array_map('escape_data', $data);
-    $values = implode(',', $escaped_data);
+    $values = escape_data($data);
     $sql = "INSERT INTO {$table} ({$columns})
             VALUES (null,{$values})";
 
