@@ -1,103 +1,25 @@
 <?php
 
-function http_status(int $code, $data = null)
+include 'storage.php';
+include 'helpers.php';
+include 'generators.php';
+
+function select_data(string $table, ?int $id, string $join = null)
 {
-    header("HTTP/1.1 {$code}");
-    echo json_encode([
-        'code' => $code,
-        'data' => $data
-    ]);
+    global $db, $foreign;
 
-    exit;
-}
-
-function plain_array(array $arr, string $glue = ',')
-{
-    return implode($glue, $arr);
-}
-
-function generate_tables()
-{
-    global $db, $dbname, $aliases;
-
-    $sql = "SELECT table_name, column_name
-            FROM information_schema.columns 
-            WHERE table_schema = '{$dbname}'
-            ORDER BY table_name, ordinal_position";
-
-    $stmt = $db->prepare($sql);
-    $stmt->execute();
-    $result = $stmt->fetchAll();
-
-    foreach ($result as $row) {
-        $table = $row['table_name'];
-        $column = $row['column_name'];
-        $alias = "{$table}.{$column} AS {$aliases[$table]}_{$row['column_name']}";
-        $tables[$table][] = strtolower($alias);
-    }
-
-    return $tables;
-}
-
-function generate_columns(string $resource, bool $filter_columns = false)
-{
-    global $tables, $excluded;
-
-    $columns = $tables[$resource];
-
-    if ($filter_columns) {
-        $columns = array_map(function ($v) use ($excluded) {
-            foreach ($excluded as $item) {
-                if (strpos($v, $item) === false) {
-                    return $v;
-                }
-            }
-        }, $columns);
-    }
-
-    $columns = plain_array($columns);
-    $columns = str_replace(',,', ',', $columns);
-
-    return $columns;
-}
-
-function generate_column_data(array $data)
-{
-    foreach ($data as $key => $value) {
-        $values[] = "{$key}='{$value}'";
-    }
-
-    return $values;
-}
-
-function escape_data(string $value)
-{
-    return "'{$value}'";
-}
-
-function request_body()
-{
-    $input = file_get_contents('php://input');
-    $data = json_decode($input, true);
-
-    return $data;
-}
-
-function select_data(?int $id, string $join = null)
-{
-    global $db, $foreign, $resource;
-
-    $host_columns = generate_columns($resource, true);
-    $sql = "SELECT {$host_columns}
-            FROM {$resource}";
+    $columns = get_columns($table, true);
 
     if ($join) {
-        $join_columns = generate_columns($join);
-        $on = plain_array($foreign[$join], '=');
-        $sql = "SELECT {$host_columns},{$join_columns}
-                FROM {$resource}
+        $join_columns = get_columns($join, true);
+        $on = implode('=', $foreign[$join]);
+        $sql = "SELECT {$columns},{$join_columns}
+                FROM {$table}
                 JOIN {$join}
                 ON {$on}";
+    } else {
+        $sql = "SELECT {$columns}
+                FROM {$table}";
     }
 
     if ($id) {
@@ -115,12 +37,12 @@ function select_data(?int $id, string $join = null)
 
 function insert_data(array $data)
 {
-    global $db, $resource;
+    global $db, $table;
 
-    $columns = generate_columns($resource, true);
+    $columns = generate_columns($table, true);
     $escaped_data = array_map('escape_data', $data);
-    $values = plain_array($escaped_data);
-    $sql = "INSERT INTO {$resource} ({$columns})
+    $values = implode(',', $escaped_data);
+    $sql = "INSERT INTO {$table} ({$columns})
             VALUES (null,{$values})";
 
     $stmt = $db->prepare($sql);
@@ -132,11 +54,11 @@ function insert_data(array $data)
 
 function update_data(int $id, array $data)
 {
-    global $db, $resource;
+    global $db, $table;
 
     $column_data = generate_column_data($data);
-    $values = plain_array($column_data);
-    $sql = "UPDATE {$resource}
+    $values = implode(',', $column_data);
+    $sql = "UPDATE {$table}
             SET {$values}
             WHERE id={$id}";
 
@@ -149,9 +71,9 @@ function update_data(int $id, array $data)
 
 function delete_data(int $id)
 {
-    global $db, $resource;
+    global $db, $table;
 
-    $sql = "DELETE FROM {$resource}
+    $sql = "DELETE FROM {$table}
             WHERE id={$id}";
 
     $stmt = $db->prepare($sql);

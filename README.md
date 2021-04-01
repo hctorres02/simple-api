@@ -39,10 +39,10 @@ $aliases = [
 
 _This version doesn't use `friendly URLs`._
 
-* GET `index.php?resource={table_name}`
-* GET `index.php?resource={table_name}&id={id}`
-* GET `index.php?resource={table_name}&join={foreign}`
-* GET `index.php?resource={table_name}&join={foreign}&id={id}`
+* GET `index.php?table={table_name}`
+* GET `index.php?table={table_name}&id={id}`
+* GET `index.php?table={table_name}&join={foreign}`
+* GET `index.php?table={table_name}&join={foreign}&id={id}`
 
 Use HTTP verbs to `create`, `update` or `delete`.
 

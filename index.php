@@ -1,34 +1,37 @@
 <?php
 
+session_start();
 header('content-type: application/json; charset=utf-8');
 
-$request_method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
-$resource = filter_input(INPUT_GET, 'resource', FILTER_SANITIZE_STRING);
-$join = filter_input(INPUT_GET, 'join', FILTER_SANITIZE_STRING);
-$id = (int) filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
+require 'config.php';
+require 'functions.php';
+require 'database.php';
 
-include('config.php');
-include('functions.php');
+$request_method = endpoint('request_method');
+$table = endpoint('table');
+$id = endpoint('id');
+$join = endpoint('join');
+
+if (!$table) {
+    http_status(400, 'table is required');
+}
 
 try {
-    $dsn = "mysql:host={$host};dbname={$dbname};charset=utf8mb4";
-    $db = new PDO($dsn, $user, $pass);
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    $db = database($dsn, $user, $pass);
+    $schema = generate_schema($db);
+    $tables = storage_get('tables');
 
-    $tables = generate_tables();
-
-    if (!$resource) {
-        http_status(400, 'resource is required');
+    if (!in_array($table, $tables)) {
+        http_status(403, 'table doesn\'t exists!');
     }
 
-    if (!in_array($resource, array_keys($tables))) {
-        http_status(403, "resource '{$resource}' doesn't exists!");
+    if ($join && !in_array($join, array_keys($foreign))) {
+        http_status(403, 'foreign table doesn\'t implemented');
     }
 
     switch ($request_method) {
         case 'GET':
-            $data = select_data($id, $join);
+            $data = select_data($table, $id, $join);
 
             if (!$data && $id) {
                 http_status(404, []);
@@ -41,11 +44,11 @@ try {
             $request_body = request_body();
 
             if (!$request_body) {
-                http_status(403, 'DATA is required');
+                http_status(403, 'data is required');
             }
 
             $id = insert_data($request_body);
-            $data = select_data($id);
+            $data = select_data($table, $id);
 
             http_status(201, $data);
             break;
@@ -54,11 +57,11 @@ try {
             $request_body = request_body();
 
             if (!$request_body) {
-                http_status(403, 'DATA is required');
+                http_status(403, 'data is required');
             }
 
             if (!$id) {
-                http_status(400, 'ID is required');
+                http_status(400, 'id is required');
             }
 
             $success = update_data($id, $request_body);
@@ -72,7 +75,7 @@ try {
 
         case 'DELETE':
             if (!$id) {
-                http_status(400, 'ID is required');
+                http_status(400, 'id is required');
             }
 
             $success = delete_data($id);
