@@ -1,4 +1,4 @@
-# Simple-API (v0.2.1)
+# Simple-API (v0.2.6)
 _A simple API (serious?)_
 
 ## Configuration:
@@ -13,20 +13,12 @@ $pass  =  '';
 
 > Now it is no longer necessary to inform your database schema, Simple API will read this information from the informed database using `information_schema.columns`.
 
-> Your database schema will be stored at server session, using PHP SESSIONS. If your alter your database, needs to clean the sessions informations to application rebuild the database schema. Also required if you change anything on `config.php`.
+> Your database schema will be stored at server session, using `PHP SESSIONS`. If your alter your database, needs to clean the sessions informations to application rebuild the database schema. Also required if you change anything on `config.php`.
 
 Hide sensitive columns:
 ```
 $excluded = [
     'password'
-];
-```
-
-Bind foreign keys (JOIN):
-```
-$foreign = [
-    'posts' => ['author_id', 'users.id'],
-    'users' => ['users.id', 'author_id']
 ];
 ```
 
