@@ -3,7 +3,7 @@
 session_start();
 header('content-type: application/json; charset=utf-8');
 
-require 'config.php';
+require 'parser.php';
 require 'functions.php';
 require 'database.php';
 
