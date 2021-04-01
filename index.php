@@ -64,7 +64,7 @@ try {
                 http_status(400, 'id is required');
             }
 
-            $success = update_data($id, $request_body);
+            $success = update_data($table, $id, $request_body);
 
             if (!$success) {
                 http_status(404, false);
@@ -78,7 +78,7 @@ try {
                 http_status(400, 'id is required');
             }
 
-            $success = delete_data($id);
+            $success = delete_data($table, $id);
 
             if (!$success) {
                 http_status(404, false);
