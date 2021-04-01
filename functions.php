@@ -55,8 +55,7 @@ function update_data(int $id, array $data)
 {
     global $db, $table;
 
-    $column_data = generate_column_data($data);
-    $values = implode(',', $column_data);
+    $values = escape_column_value($data);
     $sql = "UPDATE {$table}
             SET {$values}
             WHERE id={$id}";

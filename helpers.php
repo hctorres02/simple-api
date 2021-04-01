@@ -25,7 +25,18 @@ function escape_data(array $data)
         return "'{$value}'";
     }, $data);
 
-    $data = implode(',', $data);
+    $values = implode(',', $data);
 
-    return $data;
+    return $values;
+}
+
+function escape_column_value(array $data)
+{
+    foreach ($data as $key => $value) {
+        $values[] = "{$key}='{$value}'";
+    }
+
+    $values = implode(',', $values);
+
+    return $values;
 }

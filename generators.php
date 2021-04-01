@@ -56,15 +56,6 @@ function apply_aliases(string $table, array $columns)
     return $columns;
 }
 
-function generate_column_data(array $data)
-{
-    foreach ($data as $key => $value) {
-        $values[] = "{$key}='{$value}'";
-    }
-
-    return $values;
-}
-
 function get_columns(string $table, bool $filtered = false, bool $with_aliases = true)
 {
     $columns = generate_columns($table);
