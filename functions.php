@@ -35,11 +35,11 @@ function select_data(string $table, ?int $id, string $join = null)
     return $result;
 }
 
-function insert_data(array $data)
+function insert_data(string $table, array $data)
 {
-    global $db, $table;
+    global $db;
 
-    $columns = generate_columns($table, true);
+    $columns = get_columns($table, false, false);
     $escaped_data = array_map('escape_data', $data);
     $values = implode(',', $escaped_data);
     $sql = "INSERT INTO {$table} ({$columns})

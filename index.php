@@ -47,7 +47,7 @@ try {
                 http_status(403, 'data is required');
             }
 
-            $id = insert_data($request_body);
+            $id = insert_data($table, $request_body);
             $data = select_data($table, $id);
 
             http_status(201, $data);

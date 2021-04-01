@@ -65,7 +65,7 @@ function generate_column_data(array $data)
     return $values;
 }
 
-function get_columns(string $table, bool $filtered = false)
+function get_columns(string $table, bool $filtered = false, bool $with_aliases = true)
 {
     $columns = generate_columns($table);
 
@@ -73,7 +73,10 @@ function get_columns(string $table, bool $filtered = false)
         $columns = filter_columns($columns);
     }
 
-    $columns = apply_aliases($table, $columns);
+    if ($with_aliases) {
+        $columns = apply_aliases($table, $columns);
+    }
+
     $columns = implode(',', $columns);
 
     return $columns;
