@@ -18,8 +18,9 @@ if (!$table) {
 
 try {
     $db = database($dsn, $user, $pass);
-    $schema = generate_schema($db);
+    $schema = get_schema($db);
     $tables = storage_get('tables');
+    $foreign = storage_get('foreign');
 
     if (!in_array($table, $tables)) {
         http_status(403, 'table doesn\'t exists!');

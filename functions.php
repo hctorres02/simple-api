@@ -6,8 +6,9 @@ include 'generators.php';
 
 function select_data(string $table, ?int $id, string $join = null)
 {
-    global $db, $foreign;
+    global $db;
 
+    $foreign = storage_get('foreign');
     $columns = get_columns($table, true);
 
     if ($join) {

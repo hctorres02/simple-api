@@ -1,30 +1,69 @@
 <?php
 
+function get_schema(PDO $db)
+{
+    if (!storage_get('schema')) {
+        generate_schema($db);
+        generate_foreign($db);
+    }
+
+    return storage_get('schema');
+}
+
 function generate_schema(PDO $db)
 {
     global $dbname;
 
-    if (!storage_get('schema')) {
-        $sql = "SELECT table_name, column_name
+    $sql = "SELECT table_name, column_name
             FROM information_schema.columns 
             WHERE table_schema = '{$dbname}'
             ORDER BY table_name, ordinal_position";
 
-        $stmt = $db->prepare($sql);
-        $stmt->execute();
-        $result = $stmt->fetchAll();
+    $stmt = $db->prepare($sql);
+    $stmt->execute();
+    $result = $stmt->fetchAll();
 
-        foreach ($result as $row) {
-            $table = $row['table_name'];
-            $column = $row['column_name'];
-            $schema[$table][] = strtolower("{$column}");
-        }
-
-        storage_set('schema', $schema);
-        storage_set('tables', array_keys($schema));
+    foreach ($result as $row) {
+        $table = $row['table_name'];
+        $column = $row['column_name'];
+        $schema[$table][] = strtolower("{$column}");
     }
 
-    return storage_get('schema');
+    storage_set('schema', $schema);
+    storage_set('tables', array_keys($schema));
+}
+
+function generate_foreign(PDO $db)
+{
+    global $dbname;
+
+    $sql = "SELECT table_schema,
+                   table_name,
+                   column_name,
+                   referenced_table_schema,
+                   referenced_table_name,
+                   referenced_column_name
+            FROM information_schema.key_column_usage
+            WHERE referenced_table_name IS NOT NULL
+                  AND table_schema='{$dbname}'";
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute();
+    $result = $stmt->fetchAll();
+
+    foreach ($result as $row) {
+        $tb_name = $row['table_name'];
+        $col_name = $row['column_name'];
+        $ref_tb_name = $row['referenced_table_name'];
+        $ref_col_name = $row['referenced_column_name'];
+
+        $foreign[$tb_name] = [
+            "{$tb_name}.{$col_name}",
+            "{$ref_tb_name}.{$ref_col_name}"
+        ];
+    }
+
+    storage_set('foreign', $foreign);
 }
 
 function generate_columns(string $table)
