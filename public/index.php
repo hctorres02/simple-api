@@ -14,7 +14,7 @@ use HCTorres02\SimpleAPI\{
 };
 
 try {
-    $request = new Request;
+    $request = new Request(filter_input(INPUT_GET, 'endpoint'));
     $parser = new Parser;
 
     Response::body_if(
@@ -94,7 +94,7 @@ try {
             break;
 
         default:
-            Response::body(409);
+            Response::body(405);
             break;
     }
 } catch (PDOException $e) {

@@ -10,9 +10,9 @@ class Request
     public $foreign;
     public $data;
 
-    public function __construct()
+    public function __construct(string $endpoint)
     {
-        $endpoint = explode('/', filter_input(INPUT_GET, 'endpoint'));
+        $endpoint = explode('/', $endpoint);
 
         $this->method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
         $this->table = $endpoint[0] ?? null;
