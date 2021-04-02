@@ -2,7 +2,7 @@
 
 class DB
 {
-    private static $pdo;
+    private $pdo;
 
     public function __construct($dsn, $user, $pass)
     {
@@ -11,13 +11,13 @@ class DB
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
         ];
 
-        self::$pdo = new PDO($dsn, $user, $pass, $options);
+        $this->pdo = new PDO($dsn, $user, $pass, $options);
     }
 
-    public static function connection()
+    public function connection()
     {
-        return self::$pdo;
+        return $this->pdo;
     }
 }
 
-$db = (new DB($dsn, $user, $pass))::connection();
+$db = (new DB($dsn, $user, $pass))->connection();

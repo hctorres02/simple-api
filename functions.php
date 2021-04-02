@@ -4,29 +4,31 @@ include 'storage.php';
 include 'helpers.php';
 include 'generators.php';
 
-function select_data(string $table, ?int $id, string $join = null)
+function select_data(Request $request)
 {
     global $db;
 
-    $foreign = storage_get('foreign');
-    $columns = get_columns($table, true);
+    $host_tb = $request->table;
+    $host_cols = get_columns($host_tb, true);
+    $foreign_tb = $request->foreign;
+    $id = $request->id;
 
-    if ($join) {
-        $join_columns = get_columns($join, true);
-        $on = implode('=', $foreign[$join]);
-        $sql = "SELECT {$columns},{$join_columns}
-                FROM {$table}
-                JOIN {$join}
-                ON {$on}";
+    if ($foreign_tb) {
+        $foreign_cols = get_columns($foreign_tb, true);
+        $reference = storage_get('references')[$foreign_tb][$host_tb];
+        $reference = implode('=', $reference);
+
+        $sql = "SELECT {$host_cols}, {$foreign_cols}
+                FROM {$host_tb}
+                JOIN {$foreign_tb}
+                ON {$reference}";
     } else {
-        $sql = "SELECT {$columns}
-                FROM {$table}";
+        $sql = "SELECT {$host_cols}
+                FROM {$host_tb}";
     }
 
     if ($id) {
-        $sql = $join
-            ? "{$sql} WHERE {$foreign[$join][0]}={$id}"
-            : "{$sql} WHERE id={$id}";
+        $sql = "{$sql} WHERE {$host_tb}.id={$id}";
     }
 
     $stmt = $db->prepare($sql);
@@ -36,12 +38,15 @@ function select_data(string $table, ?int $id, string $join = null)
     return $result;
 }
 
-function insert_data(string $table, array $data)
+function insert_data(Request $request)
 {
     global $db;
 
+    $table = $request->table;
+    $data = $request->data;
     $columns = get_columns($table, false, false);
     $values = escape_data($data);
+
     $sql = "INSERT INTO {$table} ({$columns})
             VALUES (null,{$values})";
 
@@ -52,11 +57,15 @@ function insert_data(string $table, array $data)
     return $result;
 }
 
-function update_data(string $table, int $id, array $data)
+function update_data(Request $request)
 {
     global $db;
 
+    $table = $request->table;
+    $id = $request->id;
+    $data = $request->data;
     $values = escape_column_value($data);
+
     $sql = "UPDATE {$table}
             SET {$values}
             WHERE id={$id}";
@@ -68,9 +77,12 @@ function update_data(string $table, int $id, array $data)
     return (bool) $result;
 }
 
-function delete_data(string $table, int $id)
+function delete_data(Request $request)
 {
     global $db;
+
+    $table = $request->table;
+    $id = $request->id;
 
     $sql = "DELETE FROM {$table}
             WHERE id={$id}";

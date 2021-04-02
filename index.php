@@ -5,35 +5,33 @@ header('content-type: application/json; charset=utf-8');
 
 require 'parser.php';
 require 'functions.php';
+require 'request.php';
 require 'database.php';
 
-$request_method = endpoint('request_method');
-$table = endpoint('table');
-$id = endpoint('id');
-$join = endpoint('join');
+$request = new Request;
 
-if (!$table) {
+if (!$request->table) {
     http_status(400, 'table is required');
 }
 
 try {
     $schema = get_schema($db);
     $tables = storage_get('tables');
-    $foreign = storage_get('foreign');
+    $references = storage_get('references_tables');
 
-    if (!in_array($table, $tables)) {
-        http_status(403, 'table doesn\'t exists!');
+    if (!in_array($request->table, $tables)) {
+        http_status(403, "'{$request->table}' table doesn't exists!");
     }
 
-    if ($join && !in_array($join, array_keys($foreign))) {
-        http_status(403, 'foreign table doesn\'t implemented');
+    if ($request->foreign && !in_array($request->foreign, $references)) {
+        http_status(403, "'{$request->foreign}' table doesn't implemented");
     }
 
-    switch ($request_method) {
+    switch ($request->method) {
         case 'GET':
-            $data = select_data($table, $id, $join);
+            $data = select_data($request);
 
-            if (!$data && $id) {
+            if (!$data && $request->id) {
                 http_status(404, []);
             }
 
@@ -41,30 +39,30 @@ try {
             break;
 
         case 'POST':
-            $request_body = request_body();
-
-            if (!$request_body) {
-                http_status(403, 'data is required');
+            if (!$request->data) {
+                http_status(400, 'data is required');
             }
 
-            $id = insert_data($table, $request_body);
-            $data = select_data($table, $id);
+            if ($request->id) {
+                http_status(400, 'unset id');
+            }
+
+            $request->id = insert_data($request);
+            $data = select_data($request);
 
             http_status(201, $data);
             break;
 
         case 'PUT':
-            $request_body = request_body();
-
-            if (!$request_body) {
-                http_status(403, 'data is required');
+            if (!$request->data) {
+                http_status(400, 'data is required');
             }
 
-            if (!$id) {
+            if (!$request->id) {
                 http_status(400, 'id is required');
             }
 
-            $success = update_data($table, $id, $request_body);
+            $success = update_data($request);
 
             if (!$success) {
                 http_status(404, false);
@@ -78,7 +76,7 @@ try {
                 http_status(400, 'id is required');
             }
 
-            $success = delete_data($table, $id);
+            $success = delete_data($request);
 
             if (!$success) {
                 http_status(404, false);

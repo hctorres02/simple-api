@@ -4,7 +4,7 @@ function get_schema(PDO $db)
 {
     if (!storage_get('schema')) {
         generate_schema($db);
-        generate_foreign($db);
+        generate_references($db);
     }
 
     return storage_get('schema');
@@ -34,11 +34,11 @@ function generate_schema(PDO $db)
     storage_set('tables', array_keys($schema));
 }
 
-function generate_foreign(PDO $db)
+function generate_references(PDO $db)
 {
     global $dbname;
 
-    $foreign = [];
+    $references = [];
     $sql = "SELECT table_schema,
                    table_name,
                    column_name,
@@ -59,21 +59,19 @@ function generate_foreign(PDO $db)
         $ref_tb_name = $row['referenced_table_name'];
         $ref_col_name = $row['referenced_column_name'];
 
-        $foreign[$tb_name] = [
+        $references[$tb_name][$ref_tb_name] = [
             "{$tb_name}.{$col_name}",
             "{$ref_tb_name}.{$ref_col_name}"
         ];
     }
 
-    storage_set('foreign', $foreign);
+    storage_set('references', $references);
+    storage_set('references_tables', array_keys($references));
 }
 
 function generate_columns(string $table)
 {
-    $schema = storage_get('schema')[$table];
-    $columns = array_values($schema);
-
-    return $columns;
+    return storage_get('schema')[$table];
 }
 
 function filter_columns(array $columns)
@@ -109,20 +107,7 @@ function get_columns(string $table, bool $filtered = false, bool $with_aliases =
         $columns = apply_aliases($table, $columns);
     }
 
-    $columns = implode(',', $columns);
+    $columns = implode(', ', $columns);
 
     return $columns;
-}
-
-function endpoint(string $part)
-{
-    $endpoint = explode('/', filter_input(INPUT_GET, 'endpoint'));
-    $parts = [
-        'request_method' => filter_input(INPUT_SERVER, 'REQUEST_METHOD'),
-        'table' => $endpoint[0] ?? null,
-        'id' => (int) ($endpoint[1] ?? null),
-        'join' => $endpoint[2] ?? null
-    ];
-
-    return $parts[$part];
 }
