@@ -9,6 +9,7 @@ include 'helpers.php';
 include 'generators.php';
 require 'request.php';
 require 'database.php';
+require 'response.php';
 
 $request = new Request;
 $db = new DB($database);
@@ -46,10 +47,6 @@ try {
                 http_status(400, 'data is required');
             }
 
-            if ($request->id) {
-                http_status(400, 'unset id');
-            }
-
             $request->id = $db->insert($request);
             $data = $db->select($request);
 
@@ -65,26 +62,16 @@ try {
                 http_status(400, 'id is required');
             }
 
-            $success = $db->update($request);
-
-            if (!$success) {
-                http_status(404, false);
-            }
-
+            $db->update($request);
             http_status(200, true);
             break;
 
         case 'DELETE':
-            if (!$id) {
+            if (!$request->id) {
                 http_status(400, 'id is required');
             }
 
-            $success = $db->delete($request);
-
-            if (!$success) {
-                http_status(404, false);
-            }
-
+            $db->delete($request);
             http_status(200, true);
             break;
 

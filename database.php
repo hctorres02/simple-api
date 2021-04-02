@@ -1,5 +1,7 @@
 <?php
 
+include 'query.php';
+
 class DB
 {
     private $pdo;
@@ -37,10 +39,12 @@ class DB
     private function generate_schema()
     {
         $schema = [];
-        $sql = "SELECT table_name, column_name
-            FROM information_schema.columns 
-            WHERE table_schema = '{$this->dbname}'
-            ORDER BY table_name, ordinal_position";
+
+        $sql = (new Query('information_schema.columns'))
+            ->select('table_name', 'column_name')
+            ->where("table_schema = '{$this->dbname}'")
+            ->order_by('table_name', 'ordinal_position')
+            ->get();
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
@@ -59,15 +63,20 @@ class DB
     private function generate_references()
     {
         $references = [];
-        $sql = "SELECT table_schema,
-                   table_name,
-                   column_name,
-                   referenced_table_schema,
-                   referenced_table_name,
-                   referenced_column_name
-            FROM information_schema.key_column_usage
-            WHERE referenced_table_name IS NOT NULL
-                  AND table_schema='{$this->dbname}'";
+        $columns = [
+            'table_schema',
+            'table_name',
+            'column_name',
+            'referenced_table_schema',
+            'referenced_table_name',
+            'referenced_column_name'
+        ];
+
+        $sql = (new Query('information_schema.key_column_usage'))
+            ->select(...$columns)
+            ->where('referenced_table_name IS NOT NULL')
+            ->where_and("table_schema='{$this->dbname}'")
+            ->get();
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
@@ -96,23 +105,24 @@ class DB
         $foreign_tb = $request->foreign;
         $id = $request->id;
 
+        $sql = new Query($host_tb);
+
         if ($foreign_tb) {
             $foreign_cols = get_columns($foreign_tb, true);
             $reference = Session::get('references')[$foreign_tb][$host_tb];
             $reference = implode('=', $reference);
 
-            $sql = "SELECT {$host_cols}, {$foreign_cols}
-                FROM {$host_tb}
-                JOIN {$foreign_tb}
-                ON {$reference}";
+            $sql->select($host_cols, $foreign_cols)
+                ->join_on($foreign_tb, $reference);
         } else {
-            $sql = "SELECT {$host_cols}
-                FROM {$host_tb}";
+            $sql->select($host_cols);
         }
 
         if ($id) {
-            $sql = "{$sql} WHERE {$host_tb}.id={$id}";
+            $sql->where("{$host_tb}.id={$id}");
         }
+
+        $sql = $sql->get();
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
