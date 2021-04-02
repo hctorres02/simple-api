@@ -11,5 +11,14 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {}
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "HCTorres02\\SimpleAPI\\": "src/"
+        },
+        "files": [
+            "generators.php",
+            "helpers.php"
+        ]
+    }
 }

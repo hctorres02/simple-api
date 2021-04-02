@@ -1,5 +1,7 @@
 <?php
 
+namespace HCTorres02\SimpleAPI;
+
 class Request
 {
     public $method;

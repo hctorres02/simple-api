@@ -1,8 +1,10 @@
 <?php
 
-include 'query.php';
+namespace HCTorres02\SimpleAPI;
 
-class DB
+use \PDO;
+
+class Database
 {
     private $pdo;
     private $dbname;

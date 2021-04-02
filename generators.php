@@ -1,5 +1,10 @@
 <?php
 
+use HCTorres02\SimpleAPI\{
+    Session,
+    Parser
+};
+
 function generate_columns(string $table)
 {
     return Session::get('schema')[$table];
@@ -7,9 +12,8 @@ function generate_columns(string $table)
 
 function filter_columns(array $columns)
 {
-    global $excluded;
-
-    $columns = array_diff($columns, $excluded);
+    $parser = new Parser;
+    $columns = array_diff($columns, $parser->excluded);
 
     return $columns;
 }
