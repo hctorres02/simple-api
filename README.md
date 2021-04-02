@@ -1,4 +1,4 @@
-# Simple-API (v0.3.1)
+# Simple-API (v0.4)
 _A simple API (serious?)_
 
 ## Configuration:
