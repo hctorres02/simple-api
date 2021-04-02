@@ -17,8 +17,7 @@
             "HCTorres02\\SimpleAPI\\": "src/"
         },
         "files": [
-            "generators.php",
-            "helpers.php"
+            "generators.php"
         ]
     }
 }

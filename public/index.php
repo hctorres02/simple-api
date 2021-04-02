@@ -79,7 +79,7 @@ try {
 
             $db->update($request);
 
-            Response::body(true);
+            Response::body(200, true);
             break;
 
         case 'DELETE':
@@ -99,5 +99,5 @@ try {
             break;
     }
 } catch (PDOException $e) {
-    Response::body($e->getMessage(), 500);
+    Response::body(500, $e->getMessage());
 }

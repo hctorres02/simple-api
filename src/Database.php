@@ -66,10 +66,11 @@ class Database
         $table = $request->table;
         $data = $request->data;
         $columns = get_columns($table, false, false);
-        $values = escape_data($data);
 
-        $sql = "INSERT INTO {$table} ({$columns})
-            VALUES (null,{$values})";
+        $sql = (new Query($table))
+            ->insert($columns)
+            ->values($data)
+            ->get();
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
@@ -83,11 +84,11 @@ class Database
         $table = $request->table;
         $id = $request->id;
         $data = $request->data;
-        $values = escape_column_value($data);
 
-        $sql = "UPDATE {$table}
-            SET {$values}
-            WHERE id={$id}";
+        $sql = (new Query($table))
+            ->update($data)
+            ->where_id($id)
+            ->get();
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
@@ -101,8 +102,9 @@ class Database
         $table = $request->table;
         $id = $request->id;
 
-        $sql = "DELETE FROM {$table}
-            WHERE id={$id}";
+        $sql = (new Query($table))
+            ->delete($id)
+            ->get();
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();

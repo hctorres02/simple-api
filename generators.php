@@ -35,7 +35,7 @@ function apply_aliases(string $table, array $columns)
     return $columns;
 }
 
-function get_columns(string $table, bool $filtered = false, bool $with_aliases = true)
+function get_columns(string $table, bool $filtered = false, bool $with_aliases = true): string
 {
     $columns = generate_columns($table);
 
