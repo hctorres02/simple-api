@@ -19,8 +19,13 @@ function apply_aliases(string $table, array $columns)
     global $aliases;
 
     $columns = array_map(function ($column) use ($table, $aliases) {
-        $alias = "{$aliases[$table]}_{$column}";
-        return "{$table}.{$column} AS {$alias}";
+        $table_column = "{$table}.{$column}";
+
+        if (isset($aliases[$table])) {
+            return "{$table_column} AS {$aliases[$table]}_{$column}";
+        }
+
+        return $table_column;
     }, $columns);
 
     return $columns;
