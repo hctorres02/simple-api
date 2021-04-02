@@ -2,7 +2,7 @@
 
 function generate_columns(string $table)
 {
-    return storage_get('schema')[$table];
+    return Session::get('schema')[$table];
 }
 
 function filter_columns(array $columns)

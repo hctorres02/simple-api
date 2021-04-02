@@ -26,12 +26,12 @@ class DB
 
     public function get_schema()
     {
-        if (!storage_get('schema')) {
+        if (!Session::get('schema')) {
             $this->generate_schema();
             $this->generate_references();
         }
 
-        return storage_get('schema');
+        return Session::get('schema');
     }
 
     private function generate_schema()
@@ -52,8 +52,8 @@ class DB
             $schema[$table][] = strtolower("{$column}");
         }
 
-        storage_set('schema', $schema);
-        storage_set('tables', array_keys($schema));
+        Session::set('schema', $schema);
+        Session::set('tables', array_keys($schema));
     }
 
     private function generate_references()
@@ -85,8 +85,8 @@ class DB
             ];
         }
 
-        storage_set('references', $references);
-        storage_set('references_tables', array_keys($references));
+        Session::set('references', $references);
+        Session::set('references_tables', array_keys($references));
     }
 
     function select(Request $request)
@@ -98,7 +98,7 @@ class DB
 
         if ($foreign_tb) {
             $foreign_cols = get_columns($foreign_tb, true);
-            $reference = storage_get('references')[$foreign_tb][$host_tb];
+            $reference = Session::get('references')[$foreign_tb][$host_tb];
             $reference = implode('=', $reference);
 
             $sql = "SELECT {$host_cols}, {$foreign_cols}

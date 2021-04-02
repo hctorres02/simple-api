@@ -4,7 +4,7 @@ session_start();
 header('content-type: application/json; charset=utf-8');
 
 require 'parser.php';
-include 'storage.php';
+include 'session.php';
 include 'helpers.php';
 include 'generators.php';
 require 'request.php';
@@ -19,8 +19,8 @@ if (!$request->table) {
 
 try {
     $schema = $db->get_schema();
-    $tables = storage_get('tables');
-    $references = storage_get('references_tables');
+    $tables = Session::get('tables');
+    $references = Session::get('references_tables');
 
     if (!in_array($request->table, $tables)) {
         http_status(403, "'{$request->table}' table doesn't exists!");
