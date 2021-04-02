@@ -4,18 +4,21 @@ session_start();
 header('content-type: application/json; charset=utf-8');
 
 require 'parser.php';
-require 'functions.php';
+include 'storage.php';
+include 'helpers.php';
+include 'generators.php';
 require 'request.php';
 require 'database.php';
 
 $request = new Request;
+$db = new DB($database);
 
 if (!$request->table) {
     http_status(400, 'table is required');
 }
 
 try {
-    $schema = get_schema($db);
+    $schema = $db->get_schema();
     $tables = storage_get('tables');
     $references = storage_get('references_tables');
 
@@ -29,7 +32,7 @@ try {
 
     switch ($request->method) {
         case 'GET':
-            $data = select_data($request);
+            $data = $db->select($request);
 
             if (!$data && $request->id) {
                 http_status(404, []);
@@ -47,8 +50,8 @@ try {
                 http_status(400, 'unset id');
             }
 
-            $request->id = insert_data($request);
-            $data = select_data($request);
+            $request->id = $db->insert($request);
+            $data = $db->select($request);
 
             http_status(201, $data);
             break;
@@ -62,7 +65,7 @@ try {
                 http_status(400, 'id is required');
             }
 
-            $success = update_data($request);
+            $success = $db->update($request);
 
             if (!$success) {
                 http_status(404, false);
@@ -76,7 +79,7 @@ try {
                 http_status(400, 'id is required');
             }
 
-            $success = delete_data($request);
+            $success = $db->delete($request);
 
             if (!$success) {
                 http_status(404, false);
