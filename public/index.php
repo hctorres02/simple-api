@@ -10,6 +10,7 @@ use HCTorres02\SimpleAPI\{
     Parser,
     Request,
     Response,
+    Schema,
     Session
 };
 
@@ -24,7 +25,7 @@ try {
     );
 
     $db = new Database($parser->database);
-    $db->get_schema();
+    Schema::get_schema($db);
 
     $tables = Session::get('tables');
     $references = Session::get('references_tables');
