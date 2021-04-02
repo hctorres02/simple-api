@@ -1,4 +1,4 @@
-# Simple-API (v0.4)
+# Simple-API (v0.5)
 _A simple API (serious?)_
 
 ## Configuration:
@@ -43,5 +43,5 @@ Others verbs results in `status 409`.
 
 ## Roadmap
 - [x] launch v0.1
-- [ ] implements PSR-4
+- [x] implements PSR-4
 - [ ] improve DB class
