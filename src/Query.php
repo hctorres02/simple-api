@@ -14,7 +14,7 @@ class Query
 
     public function select(...$params): self
     {
-        $columns = implode(',', $params);
+        $columns = implode(', ', $params);
         $this->sql = "SELECT {$columns} FROM {$this->table}";
         return $this;
     }
@@ -39,7 +39,7 @@ class Query
 
     public function where_and(string $condition): self
     {
-        $this->where("AND {$condition}");
+        $this->sql = "{$this->sql} AND {$condition}";
         return $this;
     }
 

@@ -25,7 +25,7 @@ try {
     );
 
     $db = new Database($parser->database);
-    Schema::get_schema($db);
+    Schema::build($db);
 
     $tables = Session::get('tables');
     $references = Session::get('references_tables');

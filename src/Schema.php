@@ -6,27 +6,25 @@ class Schema
 {
     private static $db;
 
-    public static function get_schema(Database $db): void
+    public static function build(Database $db): void
     {
-        if (Session::get('schema')) {
+        if (Session::get('tables') && Session::get('references')) {
             return;
         }
 
         self::$db = $db;
 
-        $schema = self::generate_schema();
+        $tables = self::generate_tables();
         $references = self::generate_references();
 
-        Session::set('schema', $schema);
-        Session::set('tables', array_keys($schema));
+        Session::set('tables', $tables);
         Session::set('references', $references);
-        Session::set('references_tables', array_keys($references));
     }
 
-    private static function generate_schema(): array
+    private static function generate_tables(): array
     {
         $db = self::$db;
-        $schema = [];
+        $tables = [];
 
         $sql = (new Query('information_schema.columns'))
             ->select('table_name', 'column_name')
@@ -39,12 +37,12 @@ class Schema
         $result = $stmt->fetchAll();
 
         foreach ($result as $row) {
-            $table = $row['table_name'];
-            $column = $row['column_name'];
-            $schema[$table][] = strtolower("{$column}");
+            $tb_name = strtolower($row['table_name']);
+            $col_name = strtolower($row['column_name']);
+            $tables[$tb_name][] = $col_name;
         }
 
-        return $schema;
+        return $tables;
     }
 
     private static function generate_references(): array
@@ -52,10 +50,8 @@ class Schema
         $db = self::$db;
         $references = [];
         $columns = [
-            'table_schema',
             'table_name',
             'column_name',
-            'referenced_table_schema',
             'referenced_table_name',
             'referenced_column_name'
         ];
