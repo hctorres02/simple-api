@@ -68,12 +68,10 @@ class Database
 
     function update(Model $model)
     {
-        echo $sql = (new Query($model->host_tb))
+        $sql = (new Query($model->host_tb))
             ->update($model->data)
             ->where_id($model->id)
             ->get();
-
-        exit;
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();

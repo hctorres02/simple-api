@@ -51,8 +51,6 @@ try {
         "column '{$request->unknown_column}' doesn't exists!"
     );
 
-    exit;
-
     switch ($request->method) {
         case 'GET':
 
