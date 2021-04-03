@@ -57,7 +57,7 @@ try {
 
     Response::body_if(
         400,
-        !$request->id && in_array(
+        !$request->data && in_array(
             $request->method,
             ['POST', 'PUT']
         ),
