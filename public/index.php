@@ -17,18 +17,18 @@ use HCTorres02\SimpleAPI\{
 try {
     $request = new Request(filter_input(INPUT_GET, 'endpoint'));
     $parser = new Parser;
-
+    
     Response::body_if(
         400,
         !$request->table,
         'table is required'
     );
-
+    
     $db = new Database($parser->database);
     Schema::build($db);
 
-    $tables = Session::get('tables');
-    $references = Session::get('references_tables');
+    $tables = Session::get('tables', Session::KEYS);
+    $references = Session::get('references', Session::KEYS);
 
     Response::body_if(
         400,

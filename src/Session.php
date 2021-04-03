@@ -4,9 +4,15 @@ namespace HCTorres02\SimpleAPI;
 
 class Session
 {
+    public const KEYS = 'array_keys';
+
     public static function get(string $main, string $secondary = null)
     {
         if ($secondary) {
+            if ($secondary === self::KEYS) {
+                return array_keys(self::get($main) ?? []);
+            }
+
             return $_SESSION[$main][$secondary] ?? null;
         }
 
