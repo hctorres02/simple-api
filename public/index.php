@@ -7,6 +7,7 @@ require '../vendor/autoload.php';
 
 use HCTorres02\SimpleAPI\{
     Database,
+    Model,
     Parser,
     Request,
     Response,
@@ -17,13 +18,13 @@ use HCTorres02\SimpleAPI\{
 try {
     $request = new Request(filter_input(INPUT_GET, 'endpoint'));
     $parser = new Parser;
-    
+
     Response::body_if(
         400,
         !$request->table,
         'table is required'
     );
-    
+
     $db = new Database($parser->database);
     Schema::build($db);
 
@@ -42,9 +43,21 @@ try {
         "'{$request->foreign}' table doesn't implemented"
     );
 
+    $local = Session::get('tables', $request->table);
+
+    Response::body_if(
+        400,
+        !$request->validade_data_cols($local),
+        "column '{$request->unknown_column}' doesn't exists!"
+    );
+
+    exit;
+
     switch ($request->method) {
         case 'GET':
-            $data = $db->select($request);
+
+            $model = new Model($request);
+            $data = $db->select($model);
             $not_found = !$data && $request->id;
 
             Response::body_if(404, $not_found);
@@ -58,8 +71,9 @@ try {
                 'data is required'
             );
 
-            $request->id = $db->insert($request);
-            $data = $db->select($request);
+            $model = new Model($request);
+            $model->id = $db->insert($model);
+            $data = $db->select($model);
 
             Response::body(201, $data);
             break;
@@ -77,7 +91,8 @@ try {
                 'id is required'
             );
 
-            $db->update($request);
+            $model = new Model($request);
+            $db->update($model);
 
             Response::body(200, true);
             break;

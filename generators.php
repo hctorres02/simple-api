@@ -7,7 +7,7 @@ use HCTorres02\SimpleAPI\{
 
 function generate_columns(string $table)
 {
-    return Session::get('schema')[$table];
+    return Session::get('tables', $table);
 }
 
 function filter_columns(array $columns)

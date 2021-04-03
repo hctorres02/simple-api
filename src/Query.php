@@ -33,7 +33,7 @@ class Query
 
     public function where_id(int $id): self
     {
-        $this->where("id = {$id}");
+        $this->where("{$this->table}.id = {$id}");
         return $this;
     }
 

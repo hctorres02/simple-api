@@ -28,28 +28,19 @@ class Database
         $this->pdo = new PDO($dsn, $user, $pass, $options);
     }
 
-    function select(Request $request)
+    function select(Model $model)
     {
-        $host_tb = $request->table;
-        $host_cols = get_columns($host_tb, true);
-        $foreign_tb = $request->foreign;
-        $id = $request->id;
+        $sql = new Query($model->host_tb);
 
-        $sql = new Query($host_tb);
-
-        if ($foreign_tb) {
-            $foreign_cols = get_columns($foreign_tb, true);
-            $reference = Session::get('references')[$foreign_tb][$host_tb];
-            $reference = implode('=', $reference);
-
-            $sql->select($host_cols, $foreign_cols)
-                ->join_on($foreign_tb, $reference);
+        if ($model->foreign_tb) {
+            $sql->select($model->host_cols, $model->foreign_cols)
+                ->join_on($model->foreign_tb, $model->foreign_refs);
         } else {
-            $sql->select($host_cols);
+            $sql->select($model->host_cols);
         }
 
-        if ($id) {
-            $sql->where("{$host_tb}.id={$id}");
+        if ($model->id) {
+            $sql->where_id($model->id);
         }
 
         $sql = $sql->get();
@@ -61,15 +52,11 @@ class Database
         return $result;
     }
 
-    function insert(Request $request)
+    function insert(Model $model)
     {
-        $table = $request->table;
-        $data = $request->data;
-        $columns = get_columns($table, false, false);
-
-        $sql = (new Query($table))
-            ->insert($columns)
-            ->values($data)
+        $sql = (new Query($model->host_tb))
+            ->insert($model->host_cols)
+            ->values($model->data)
             ->get();
 
         $stmt = $this->pdo->prepare($sql);
@@ -79,16 +66,14 @@ class Database
         return $result;
     }
 
-    function update(Request $request)
+    function update(Model $model)
     {
-        $table = $request->table;
-        $id = $request->id;
-        $data = $request->data;
-
-        $sql = (new Query($table))
-            ->update($data)
-            ->where_id($id)
+        echo $sql = (new Query($model->host_tb))
+            ->update($model->data)
+            ->where_id($model->id)
             ->get();
+
+        exit;
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
