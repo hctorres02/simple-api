@@ -80,13 +80,10 @@ class Database
         return (bool) $result;
     }
 
-    function delete(Request $request)
+    function delete(Model $model)
     {
-        $table = $request->table;
-        $id = $request->id;
-
-        $sql = (new Query($table))
-            ->delete($id)
+        $sql = (new Query($model->host_tb))
+            ->delete($model->id)
             ->get();
 
         $stmt = $this->pdo->prepare($sql);

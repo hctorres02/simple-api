@@ -26,35 +26,57 @@ try {
     );
 
     $db = new Database($parser->database);
+
     Schema::build($db);
 
-    $tables = Session::get('tables', Session::KEYS);
-    $references = Session::get('references', Session::KEYS);
-
     Response::body_if(
         400,
-        !in_array($request->table, $tables),
-        "'{$request->table}' table doesn't exists!"
+        !in_array(
+            $request->table,
+            Session::get('tables', Session::KEYS)
+        ),
+        "table '{$request->table}' doesn't exists!"
     );
 
     Response::body_if(
         400,
-        $request->foreign && !in_array($request->foreign, $references),
-        "'{$request->foreign}' table doesn't implemented"
+        $request->foreign && !in_array(
+            $request->foreign,
+            Session::get('references', Session::KEYS)
+        ),
+        "table '{$request->foreign}' doesn't implemented"
     );
-
-    $local = Session::get('tables', $request->table);
 
     Response::body_if(
         400,
-        !$request->validade_data_cols($local),
+        !$request->validade_data_cols(
+            Session::get('tables', $request->table)
+        ),
         "column '{$request->unknown_column}' doesn't exists!"
     );
 
+    Response::body_if(
+        400,
+        !$request->id && in_array(
+            $request->method,
+            ['POST', 'PUT']
+        ),
+        'data is required'
+    );
+
+    Response::body_if(
+        400,
+        !$request->id && in_array(
+            $request->method,
+            ['PUT', 'DELETE']
+        ),
+        'id is required'
+    );
+
+    $model = new Model($request);
+
     switch ($request->method) {
         case 'GET':
-
-            $model = new Model($request);
             $data = $db->select($model);
             $not_found = !$data && $request->id;
 
@@ -63,13 +85,6 @@ try {
             break;
 
         case 'POST':
-            Response::body_if(
-                400,
-                !$request->data,
-                'data is required'
-            );
-
-            $model = new Model($request);
             $model->id = $db->insert($model);
             $data = $db->select($model);
 
@@ -77,32 +92,13 @@ try {
             break;
 
         case 'PUT':
-            Response::body_if(
-                400,
-                !$request->data,
-                'data is required'
-            );
-
-            Response::body_if(
-                400,
-                !$request->id,
-                'id is required'
-            );
-
-            $model = new Model($request);
             $db->update($model);
 
             Response::body(200, true);
             break;
 
         case 'DELETE':
-            Response::body_if(
-                400,
-                !$request->id,
-                'id is required'
-            );
-
-            $db->delete($request);
+            $db->delete($model);
 
             Response::body(200, true);
             break;
