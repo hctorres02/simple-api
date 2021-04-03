@@ -44,8 +44,13 @@ class Database
 
         $sql = new Query($request->host_tb);
 
-        if ($request->foreign_tb) {
-            $sql->select($request->host_cols, $request->foreign_cols)
+        if ($request->foreign_cols) {
+            $columns = array_merge(
+                $request->host_cols,
+                $request->foreign_cols
+            );
+
+            $sql->select($columns)
                 ->join_on($request->foreign_tb, $request->foreign_refs);
         } else {
             $sql->select($request->host_cols);
@@ -66,7 +71,7 @@ class Database
 
     function insert(Request $request)
     {
-        echo $sql = (new Query($request->host_tb))
+        $sql = (new Query($request->host_tb))
             ->insert($request->data_cols)
             ->values($request->data)
             ->get();

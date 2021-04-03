@@ -96,14 +96,12 @@ class Request
 
         if ($this->foreign_tb) {
             $foreign_cols = $this->builder($this->foreign_tb, $meta);
-            $foreign_refs = implode(' = ', Session::get(
-                'references',
-                $this->foreign_tb,
-                $this->host_tb
-            ));
+            $foreign_refs = Session::get('references', $this->foreign_tb, $this->host_tb);
 
-            $this->foreign_cols = $foreign_cols;
-            $this->foreign_refs = $foreign_refs;
+            if ($foreign_refs) {
+                $this->foreign_cols = $foreign_cols;
+                $this->foreign_refs = $foreign_refs;
+            }
         }
 
         return $this;
@@ -121,8 +119,6 @@ class Request
         if (isset($meta['aliases'])) {
             $columns = $this->apply_aliases($meta, $columns);
         }
-
-        $columns = implode(', ', $columns);
 
         return $columns;
     }

@@ -25,9 +25,13 @@ class Schema
     {
         $db = self::$db;
         $tables = [];
+        $columns = [
+            'table_name',
+            'column_name'
+        ];
 
         $sql = (new Query('information_schema.columns'))
-            ->select('table_name', 'column_name')
+            ->select($columns)
             ->where("table_schema = '{$db->dbname}'")
             ->order_by('table_name', 'ordinal_position')
             ->get();
@@ -57,7 +61,7 @@ class Schema
         ];
 
         $sql = (new Query('information_schema.key_column_usage'))
-            ->select(...$columns)
+            ->select($columns)
             ->where('referenced_table_name IS NOT NULL')
             ->where_and("table_schema='{$db->dbname}'")
             ->get();

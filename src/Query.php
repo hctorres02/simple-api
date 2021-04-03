@@ -12,16 +12,17 @@ class Query
         $this->table = $table;
     }
 
-    public function select(...$params): self
+    public function select(array $columns): self
     {
-        $columns = implode(', ', $params);
+        $columns = implode(', ', $columns);
         $this->sql = "SELECT {$columns} FROM {$this->table}";
         return $this;
     }
 
-    public function join_on(string $foreign, string $reference): self
+    public function join_on(string $foreign, array $references): self
     {
-        $this->sql = "{$this->sql} JOIN {$foreign} ON {$reference}";
+        $references = implode(' = ', $references);
+        $this->sql = "{$this->sql} JOIN {$foreign} ON {$references}";
         return $this;
     }
 
