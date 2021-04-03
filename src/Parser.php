@@ -6,13 +6,13 @@ class Parser
 {
     private $env;
 
-    public function __construct()
+    public function __construct(string $filename)
     {
-        $this->env = parse_ini_file(__DIR__ . '/../.env', true);
+        $this->env = parse_ini_file($filename, true);
     }
 
-    public function __get($name)
+    public function __get(string $key)
     {
-        return $this->env[$name];
+        return $this->env[$key];
     }
 }

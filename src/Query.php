@@ -58,7 +58,7 @@ class Query
 
     public function insert(...$params): self
     {
-        $columns = implode(', ', $params);
+        $columns = implode(', ', ...$params);
         $this->sql = "INSERT INTO {$this->table} ({$columns})";
         return $this;
     }
@@ -70,7 +70,7 @@ class Query
         }, ...$params);
 
         $values = implode(', ', $data);
-        $this->sql = "{$this->sql} VALUES (null, {$values})";
+        $this->sql = "{$this->sql} VALUES ({$values})";
 
         return $this;
     }

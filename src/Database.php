@@ -9,8 +9,13 @@ class Database
     public $pdo;
     public $dbname;
 
-    public function __construct(array $database)
+    private $aliases;
+    private $exclude;
+
+    public function __construct(Parser $parser)
     {
+        $database = $parser->database;
+
         $drive = $database['drive'];
         $host = $database['host'];
         $dbname = $database['dbname'];
@@ -26,21 +31,28 @@ class Database
 
         $this->dbname = $dbname;
         $this->pdo = new PDO($dsn, $user, $pass, $options);
+        $this->aliases = $parser->aliases;
+        $this->exclude = $parser->excluded;
     }
 
-    function select(Model $model)
+    function select(Request $request)
     {
-        $sql = new Query($model->host_tb);
+        $request = $request->build_columns([
+            'aliases' => $this->aliases,
+            'excluded' => $this->exclude
+        ]);
 
-        if ($model->foreign_tb) {
-            $sql->select($model->host_cols, $model->foreign_cols)
-                ->join_on($model->foreign_tb, $model->foreign_refs);
+        $sql = new Query($request->host_tb);
+
+        if ($request->foreign_tb) {
+            $sql->select($request->host_cols, $request->foreign_cols)
+                ->join_on($request->foreign_tb, $request->foreign_refs);
         } else {
-            $sql->select($model->host_cols);
+            $sql->select($request->host_cols);
         }
 
-        if ($model->id) {
-            $sql->where_id($model->id);
+        if ($request->id) {
+            $sql->where_id($request->id);
         }
 
         $sql = $sql->get();
@@ -52,11 +64,11 @@ class Database
         return $result;
     }
 
-    function insert(Model $model)
+    function insert(Request $request)
     {
-        $sql = (new Query($model->host_tb))
-            ->insert($model->host_cols)
-            ->values($model->data)
+        echo $sql = (new Query($request->host_tb))
+            ->insert($request->data_cols)
+            ->values($request->data)
             ->get();
 
         $stmt = $this->pdo->prepare($sql);
@@ -66,11 +78,11 @@ class Database
         return $result;
     }
 
-    function update(Model $model)
+    function update(Request $request)
     {
-        $sql = (new Query($model->host_tb))
-            ->update($model->data)
-            ->where_id($model->id)
+        $sql = (new Query($request->host_tb))
+            ->update($request->data)
+            ->where_id($request->id)
             ->get();
 
         $stmt = $this->pdo->prepare($sql);
@@ -80,10 +92,10 @@ class Database
         return (bool) $result;
     }
 
-    function delete(Model $model)
+    function delete(Request $request)
     {
-        $sql = (new Query($model->host_tb))
-            ->delete($model->id)
+        $sql = (new Query($request->host_tb))
+            ->delete($request->id)
             ->get();
 
         $stmt = $this->pdo->prepare($sql);
