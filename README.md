@@ -1,14 +1,14 @@
-# Simple-API (v0.5)
+# Simple-API (v0.5.8)
 _A simple API (serious?)_
 
 ## Configuration:
 
 Update `.env` file with your database infos:
 ```
-host = 'localhost';
-dbname = 'simple-api';
-user = 'root';
-pass = '';
+host = localhost
+dbname = simple-api
+user = root
+pass =
 ```
 
 > Simple API will read this information from the informed database using `information_schema.columns`. The database schema will be stored at server session, using `PHP SESSIONS`.
