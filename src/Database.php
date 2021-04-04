@@ -36,7 +36,7 @@ class Database
         $this->pdo = new PDO($dsn, $user, $pass, $options);
     }
 
-    function select(Request $request)
+    public function select(Request $request)
     {
         $request = $request->build_columns([
             'aliases' => $this->aliases,
@@ -71,7 +71,7 @@ class Database
         return $result;
     }
 
-    function insert(Request $request)
+    public function insert(Request $request)
     {
         $query = (new Query($request->host_tb))
             ->insert($request->data_cols)
@@ -87,7 +87,7 @@ class Database
         return $result;
     }
 
-    function update(Request $request)
+    public function update(Request $request)
     {
         $query = (new Query($request->host_tb))
             ->update($request->data)
@@ -103,7 +103,7 @@ class Database
         return (bool) $result;
     }
 
-    function delete(Request $request)
+    public function delete(Request $request)
     {
         $query = (new Query($request->host_tb))
             ->delete($request->id);
