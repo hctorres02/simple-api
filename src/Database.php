@@ -42,7 +42,7 @@ class Database
             'excluded' => $this->exclude
         ]);
 
-        $sql = new Query($request->host_tb);
+        $query = new Query($request->host_tb);
 
         if ($request->foreign_cols) {
             $columns = array_merge(
@@ -50,20 +50,21 @@ class Database
                 $request->foreign_cols
             );
 
-            $sql->select($columns)
+            $query->select($columns)
                 ->join_on($request->foreign_tb, $request->foreign_refs);
         } else {
-            $sql->select($request->host_cols);
+            $query->select($request->host_cols);
         }
 
         if ($request->id) {
-            $sql->where_id($request->id);
+            $query->where_id($request->id);
         }
 
-        $sql = $sql->get();
+        $sql = $query->get();
+        $binds = $query->get_binds();
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute();
+        $stmt->execute($binds);
         $result = $stmt->fetchAll();
 
         return $result;
@@ -71,13 +72,15 @@ class Database
 
     function insert(Request $request)
     {
-        $sql = (new Query($request->host_tb))
+        $query = (new Query($request->host_tb))
             ->insert($request->data_cols)
-            ->values($request->data)
-            ->get();
+            ->values($request->data);
+
+        $sql = $query->get();
+        $binds = $query->get_binds();
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute();
+        $stmt->execute($binds);
         $result = $this->pdo->lastInsertId();
 
         return $result;
@@ -85,13 +88,15 @@ class Database
 
     function update(Request $request)
     {
-        $sql = (new Query($request->host_tb))
+        $query = (new Query($request->host_tb))
             ->update($request->data)
-            ->where_id($request->id)
-            ->get();
+            ->where_id($request->id);
+
+        $sql = $query->get();
+        $binds = $query->get_binds();
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute();
+        $stmt->execute($binds);
         $result = $stmt->rowCount();
 
         return (bool) $result;
@@ -99,12 +104,14 @@ class Database
 
     function delete(Request $request)
     {
-        $sql = (new Query($request->host_tb))
-            ->delete($request->id)
-            ->get();
+        $query = (new Query($request->host_tb))
+            ->delete($request->id);
+
+        $sql = $query->get();
+        $binds = $query->get_binds();
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute();
+        $stmt->execute($binds);
         $result = $stmt->rowCount();
 
         return (bool) $result;

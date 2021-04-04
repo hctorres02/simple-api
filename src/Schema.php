@@ -30,14 +30,16 @@ class Schema
             'column_name'
         ];
 
-        $sql = (new Query('information_schema.columns'))
+        $query = (new Query('information_schema.columns'))
             ->select($columns)
-            ->where("table_schema = '{$db->dbname}'")
-            ->order_by('table_name', 'ordinal_position')
-            ->get();
+            ->where('table_schema', $db->dbname)
+            ->order_by('table_name', 'ordinal_position');
+
+        $sql = $query->get();
+        $binds = $query->get_binds();
 
         $stmt = $db->pdo->prepare($sql);
-        $stmt->execute();
+        $stmt->execute($binds);
         $result = $stmt->fetchAll();
 
         foreach ($result as $row) {
@@ -60,14 +62,16 @@ class Schema
             'referenced_column_name'
         ];
 
-        $sql = (new Query('information_schema.key_column_usage'))
+        $query = (new Query('information_schema.key_column_usage'))
             ->select($columns)
-            ->where('referenced_table_name IS NOT NULL')
-            ->where_and("table_schema='{$db->dbname}'")
-            ->get();
+            ->where_is('referenced_table_name', 'NOT NULL')
+            ->and('table_schema', $db->dbname);
+
+        $sql = $query->get();
+        $binds = $query->get_binds();
 
         $stmt = $db->pdo->prepare($sql);
-        $stmt->execute();
+        $stmt->execute($binds);
         $result = $stmt->fetchAll();
 
         foreach ($result as $row) {
