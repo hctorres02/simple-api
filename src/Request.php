@@ -5,7 +5,6 @@ namespace HCTorres02\SimpleAPI;
 class Request
 {
     public $method;
-    public $is_get;
     public $host_tb;
     public $host_cols;
     public $id;
@@ -18,27 +17,29 @@ class Request
 
     public function __construct(string $endpoint)
     {
-        $endpoint = explode('/', $endpoint);
+        $endpoint = $this->fill_endpoint($endpoint);
 
         $this->method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
-        $this->is_get = $this->method == 'GET';
+        $this->host_tb = $endpoint[0];
+        $this->id = (int) $endpoint[1];
+        $this->foreign_tb = $endpoint[2];
 
-        if (isset($endpoint[0])) {
-            $this->host_tb = $endpoint[0];
-        }
-
-        if (isset($endpoint[1])) {
-            $this->id = (int) $endpoint[1];
-        }
-
-        if (isset($endpoint[2])) {
-            $this->foreign_tb = $endpoint[2];
-        }
-
-        if (!$this->is_get) {
+        if (in_array($this->method, ['POST', 'PUT'])) {
             $this->data = $this->get_data();
             $this->data_cols = array_keys($this->data);
         }
+    }
+
+    private function fill_endpoint(string $endpoint): array
+    {
+        $e = explode('/', $endpoint);
+        $f = array_fill(0, 3, null);
+
+        for ($i = 0; $i < count($e); $i++) {
+            $f[$i] = $e[$i] ?: null;
+        }
+
+        return $f;
     }
 
     private function get_data()
@@ -61,8 +62,13 @@ class Request
         return true;
     }
 
-    public function build_columns(array $meta = [])
+    public function build_columns()
     {
+        $meta = [
+            'aliases' => Session::get('aliases'),
+            'excluded' => Session::get('excluded')
+        ];
+
         $this->host_cols = $this->builder($this->host_tb, $meta);
 
         if ($this->foreign_tb) {
@@ -81,15 +87,10 @@ class Request
     private function builder(string $table, array $meta)
     {
         $meta['table'] = $table;
+
         $columns = Session::get('tables', $table);
-
-        if (isset($meta['excluded'])) {
-            $columns = array_diff($columns, $meta['excluded']);
-        }
-
-        if (isset($meta['aliases'])) {
-            $columns = $this->apply_aliases($meta, $columns);
-        }
+        $columns = array_diff($columns, $meta['excluded']);
+        $columns = $this->apply_aliases($meta, $columns);
 
         return $columns;
     }

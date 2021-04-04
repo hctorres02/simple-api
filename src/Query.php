@@ -5,17 +5,18 @@ namespace HCTorres02\SimpleAPI;
 class Query
 {
     private $sql;
-    private $table;
     private $binds;
+    private $table;
 
     public function __construct(string $table)
     {
-        $this->table = $table;
         $this->binds = [];
+        $this->table = $table;
     }
 
     public function select(array $columns): self
     {
+        $this->binds = [];
         $columns = implode(', ', $columns);
         $this->sql = "SELECT {$columns} FROM {$this->table}";
 
@@ -24,6 +25,7 @@ class Query
 
     public function insert(array $columns): self
     {
+        $this->binds = [];
         $columns = implode(', ', $columns);
         $this->sql = "INSERT INTO {$this->table} ({$columns})";
 
@@ -33,6 +35,7 @@ class Query
 
     public function update(array $columns): self
     {
+        $this->binds = [];
         $values = $this->dataset($columns, true);
         $this->sql = "UPDATE {$this->table} SET {$values}";
 
@@ -41,6 +44,7 @@ class Query
 
     public function delete(int $id): self
     {
+        $this->binds = [];
         $this->sql = "DELETE FROM {$this->table}";
         $this->where_id($id);
 

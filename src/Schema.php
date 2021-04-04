@@ -6,7 +6,7 @@ class Schema
 {
     private static $db;
 
-    public static function build(Database $db): void
+    public static function build(Database $db, array $meta): void
     {
         if (Session::get('tables') && Session::get('references')) {
             return;
@@ -14,11 +14,12 @@ class Schema
 
         self::$db = $db;
 
-        $tables = self::generate_tables();
-        $references = self::generate_references();
+        $meta['tables'] = self::generate_tables();
+        $meta['references'] = self::generate_references();
 
-        Session::set('tables', $tables);
-        Session::set('references', $references);
+        foreach ($meta as $key => $value) {
+            Session::set($key, $value);
+        }
     }
 
     private static function generate_tables(): array
