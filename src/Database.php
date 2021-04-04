@@ -10,7 +10,7 @@ class Database
     public $dbname;
 
     private $aliases;
-    private $exclude;
+    private $excluded;
 
     public function __construct(Parser $parser)
     {
@@ -31,7 +31,7 @@ class Database
         ];
 
         $this->aliases = $parser->aliases;
-        $this->exclude = $parser->excluded;
+        $this->excluded = $parser->excluded;
         $this->dbname = $dbname;
         $this->pdo = new PDO($dsn, $user, $pass, $options);
     }
