@@ -40,7 +40,7 @@ class Database
     {
         $request = $request->build_columns([
             'aliases' => $this->aliases,
-            'excluded' => $this->exclude
+            'excluded' => $this->excluded
         ]);
 
         $query = new Query($request->host_tb);
