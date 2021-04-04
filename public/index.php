@@ -10,7 +10,8 @@ use HCTorres02\SimpleAPI\{
     Parser,
     Request,
     Response,
-    Schema
+    Schema,
+    Validator
 };
 
 try {
@@ -19,7 +20,7 @@ try {
     $request = new Request(filter_input(INPUT_GET, 'endpoint'));
 
     Schema::build($db);
-    Request::validade($request);
+    Validator::validade_request($request);
 
     switch ($request->method) {
         case 'GET':
