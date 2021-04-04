@@ -22,6 +22,7 @@ class Database
         $user = $database['user'];
         $pass = $database['pass'];
         $charset = $database['charset'];
+
         $dsn = "{$drive}:host={$host};dbname={$dbname};charset={$charset}";
 
         $options = [
@@ -29,10 +30,10 @@ class Database
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
         ];
 
-        $this->dbname = $dbname;
-        $this->pdo = new PDO($dsn, $user, $pass, $options);
         $this->aliases = $parser->aliases;
         $this->exclude = $parser->excluded;
+        $this->dbname = $dbname;
+        $this->pdo = new PDO($dsn, $user, $pass, $options);
     }
 
     function select(Request $request)
