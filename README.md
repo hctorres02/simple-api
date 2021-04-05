@@ -1,5 +1,16 @@
-# Simple-API (v0.5.8)
+# Simple-API (v0.6)
 _A simple API (serious?)_
+
+## Roadmap
+- [x] first launch!
+- [x] implements PSR-4
+- [ ] live demo
+- [ ] improve DB class
+- - [x] `join`
+- - [ ] `like` *(a.k.a. dataset filter)*
+- - [ ] `columns selection`
+- - [ ] `offset/limit` _(a.k.a. pagination)_
+- - [ ] `order by` 
 
 ## Configuration:
 
@@ -19,7 +30,7 @@ Hide sensitive columns:
 0=password
 ```
 
-Bind columns aliases (JOIN) | (a.k.a singular)
+Bind columns aliases (JOIN) | _(a.k.a. singular)_
 ```
 [aliases]
 posts = post
@@ -30,7 +41,7 @@ users = user
 
 ## Usage
 
-_This version doesn't use `friendly URLs`._
+_This version __doesn't__ use `friendly URLs`._
 
 * GET `index.php?endpoint={host_table}`
 * GET `index.php?endpoint={host_table}/{id}`
@@ -40,8 +51,3 @@ Use HTTP verbs to `create`, `update` or `delete`.
 
 Currently, HTTP verbs allowed are: `GET`, `POST`, `PUT`, `DELETE`.
 Others verbs results in `status 409`.
-
-## Roadmap
-- [x] launch v0.1
-- [x] implements PSR-4
-- [ ] improve DB class
