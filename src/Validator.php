@@ -4,47 +4,47 @@ namespace HCTorres02\SimpleAPI;
 
 class Validator
 {
-    public static function validade_request(Request $request)
+    public static function validade_request(Endpoint $endpoint)
     {
+        $tables = Session::get('tables');
+        $references = Session::get('references');
+        $current_table = $tables[$endpoint->table];
+
+        $is_post_or_put = in_array(Request::method(), ['POST', 'PUT']);
+        $is_put_or_delete = in_array(Request::method(), ['PUT', 'DELETE']);
+        $table_exists = in_array($endpoint->table, array_keys($tables));
+        $foreign_exists = in_array($endpoint->foreign, array_keys($references));
+        $unknown_data_col = Request::has_unknown_data_column($current_table);
+
         $tests = [
             [
-                'code' => 400,
-                'result' => !$request->host_tb,
+                'result' => !$endpoint->table,
                 'message' => 'table is required',
             ],
             [
-                'code' => 400,
-                'result' => !$request->id
-                    && in_array($request->method, ['PUT', 'DELETE']),
+                'result' => !$endpoint->id && $is_put_or_delete,
                 'message' => 'id is required'
             ],
             [
-                'code' => 400,
-                'result' => !$request->data
-                    && in_array($request->method, ['POST', 'PUT']),
+                'result' => !Request::data() && $is_post_or_put,
                 'message' => 'data is required'
             ],
             [
-                'code' => 400,
-                'result' => !in_array($request->host_tb, Session::get('tables', Session::KEYS)),
-                'message' => "table '{$request->host_tb}' doesn't exists!"
+                'result' => !$table_exists,
+                'message' => "table '{$endpoint->table}' doesn't exists!"
             ],
             [
-                'code' => 400,
-                'result' => $request->foreign_tb
-                    && !in_array($request->foreign_tb, Session::get('references', Session::KEYS)),
-                'message' => "table '{$request->foreign_tb}' doesn't implemented"
+                'result' => $endpoint->foreign && !$foreign_exists,
+                'message' => "table '{$endpoint->foreign}' doesn't implemented"
             ],
             [
-                'code' => 400,
-                'result' => $request->data
-                    && !$request->validade_data_cols(Session::get('tables', $request->host_tb)),
-                'message' => "column '{$request->unknown_column}' doesn't exists!"
+                'result' => Request::data() && $unknown_data_col,
+                'message' => "column '{$unknown_data_col}' doesn't exists!"
             ]
         ];
 
         foreach ($tests as $test) {
-            Response::body_if($test['code'], $test['result'], $test['message']);
+            Response::body_if(400, $test['result'], $test['message']);
         }
     }
 }

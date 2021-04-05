@@ -7,52 +7,51 @@ require '../vendor/autoload.php';
 
 use HCTorres02\SimpleAPI\{
     Database,
+    Endpoint,
+    Model,
     Parser,
     Query,
     Request,
     Response,
-    Schema,
     Validator
 };
 
 try {
     $env = realpath(__DIR__ . '/../.env');
+    $qs = filter_input(INPUT_GET, 'endpoint');
+
     $parser = new Parser($env);
     $db = new Database($parser->database);
 
-    Schema::build($db, [
+    $_SESSION = $db->build_schema([
         'aliases' => $parser->aliases,
         'excluded' => $parser->excluded
     ]);
 
-    $endpoint = filter_input(INPUT_GET, 'endpoint');
-    $request = new Request($endpoint);
+    Response::body(200, $_SESSION);
 
-    Validator::validade_request($request);
+    $endpoint = new Endpoint($qs);
+    $request = new Request;
 
-    $query = new Query($request->host_tb);
+    Validator::validade_request($endpoint);
 
-    switch ($request->method) {
+    $model = new Model($endpoint->table);
+    $query = new Query($endpoint->table);
+
+    switch (Request::method()) {
         case 'GET':
-            $request->build_columns();
+            if ($endpoint->foreign) {
+                $model->add_foreign($endpoint->foreign);
 
-            if ($request->foreign_tb) {
-                $columns = array_merge(
-                    $request->host_cols,
-                    $request->foreign_cols
-                );
-
-                $query->select($columns)
-                    ->join_on($request->foreign_tb, $request->foreign_refs);
+                $query->select($model->cols)
+                    ->join_on($endpoint->foreign, $model->foreign_refs);
             } else {
-                $query->select($request->host_cols);
+                $query->select($model->cols_filtered_aliased);
             }
 
-            if ($request->id) {
-                $query->where_id($request->id);
+            if ($endpoint->id) {
+                $query->where_id($endpoint->id);
             }
-
-            $query->order_by("{$request->host_tb}.id");
 
             $data = $db->select($query);
 
@@ -61,13 +60,11 @@ try {
             break;
 
         case 'POST':
-            $query->insert($request->data_cols)
-                ->values($request->data);
+            $query->insert(Request::data_cols())
+                ->values(Request::data());
 
             $id = $db->insert($query);
-
-            $request->build_columns();
-            $query->select($request->host_cols)
+            $query->select($model->cols)
                 ->where_id($id);
 
             $data = $db->select($query);
@@ -76,17 +73,21 @@ try {
             break;
 
         case 'PUT':
-            $query->update($request->data)
-                ->where_id($request->id);
+            $query->update(Request::data())
+                ->where_id($endpoint->id);
 
             $db->update($query);
+
+            $query->select($model->cols)
+                ->where_id($endpoint->id);
+
             $data = $db->select($query);
 
             Response::body(200, $data);
             break;
 
         case 'DELETE':
-            $query->delete($request->id);
+            $query->delete($endpoint->id);
 
             $data = $db->delete($query);
 
