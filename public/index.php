@@ -28,13 +28,11 @@ use HCTorres02\SimpleAPI\Utils\{
 try {
     $env = realpath(__DIR__ . '/../.env');
     $parser = new Parser($env);
-    $db = new Database($parser->database);
+    $db = new Database($parser);
     $request = new Request();
 
     if (!Session::get('tables')) {
         $meta = [
-            'aliases' => $parser->aliases,
-            'excluded' => $parser->excluded,
             'tables' => $db->generate_tables(),
             'references' => $db->generate_references()
         ];

@@ -2,6 +2,7 @@
 
 namespace HCTorres02\SimpleAPI;
 
+use HCTorres02\SimpleAPI\Utils\Parser;
 use \PDO;
 
 class Database
@@ -9,8 +10,13 @@ class Database
     public $pdo;
     public $dbname;
 
-    public function __construct(array $db_info)
+    private $aliases;
+    private $excluded;
+
+    public function __construct(Parser $parser)
     {
+        $db_info = $parser->database;
+
         $drive = $db_info['drive'];
         $host = $db_info['host'];
         $dbname = $db_info['dbname'];
@@ -25,6 +31,8 @@ class Database
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
         ];
 
+        $this->aliases = $parser->aliases;
+        $this->excluded = $parser->excluded;
         $this->dbname = $dbname;
         $this->pdo = new PDO($dsn, $user, $pass, $options);
     }
