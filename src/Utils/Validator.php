@@ -1,6 +1,15 @@
 <?php
 
-namespace HCTorres02\SimpleAPI;
+namespace HCTorres02\SimpleAPI\Utils;
+
+use HCTorres02\SimpleAPI\Http\{
+    Request,
+    Response
+};
+
+use HCTorres02\SimpleAPI\Storage\{
+    Session
+};
 
 class Validator
 {

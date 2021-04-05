@@ -8,18 +8,28 @@ require '../vendor/autoload.php';
 use HCTorres02\SimpleAPI\{
     Database,
     Model,
-    Parser,
-    Query,
+    Query
+};
+
+use HCTorres02\SimpleAPI\Storage\{
+    Session
+};
+
+use HCTorres02\SimpleAPI\Http\{
     Request,
-    Response,
-    Session,
+    Response
+};
+
+use HCTorres02\SimpleAPI\Utils\{
+    Parser,
     Validator
 };
 
 try {
-    $parser = new Parser();
-    $request = new Request();
+    $env = realpath(__DIR__ . '/../.env');
+    $parser = new Parser($env);
     $db = new Database($parser->database);
+    $request = new Request();
 
     if (!Session::get('tables')) {
         $meta = [

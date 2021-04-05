@@ -1,6 +1,6 @@
 <?php
 
-namespace HCTorres02\SimpleAPI;
+namespace HCTorres02\SimpleAPI\Http;
 
 class Response
 {

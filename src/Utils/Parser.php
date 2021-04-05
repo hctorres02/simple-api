@@ -1,14 +1,13 @@
 <?php
 
-namespace HCTorres02\SimpleAPI;
+namespace HCTorres02\SimpleAPI\Utils;
 
 class Parser
 {
     private $env;
 
-    public function __construct(string $filename = null)
+    public function __construct(string $filename)
     {
-        $filename = $filename ?? realpath(__DIR__ . '/../.env');
         $this->env = parse_ini_file($filename, true);
     }
 

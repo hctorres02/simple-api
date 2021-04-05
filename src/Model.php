@@ -2,6 +2,10 @@
 
 namespace HCTorres02\SimpleAPI;
 
+use HCTorres02\SimpleAPI\Storage\{
+    Session
+};
+
 class Model
 {
     private $table;
