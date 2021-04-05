@@ -32,7 +32,6 @@ class Query
         return $this;
     }
 
-
     public function update(array $columns): self
     {
         $this->binds = [];
