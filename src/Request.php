@@ -14,7 +14,7 @@ class Request
         $input = file_get_contents('php://input');
         $data = json_decode($input, true);
 
-        return $data;
+        return $data ?? [];
     }
 
     public static function data_cols(): ?array

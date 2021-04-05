@@ -23,8 +23,13 @@ class Session
         return $_SESSION[$main] ?? null;
     }
 
-    public static function set(string $key, $data)
+    public static function set(string $key, $data): void
     {
+        if ($key == '*') {
+            $_SESSION = $data;
+            return;
+        }
+
         $_SESSION[$key] = $data;
     }
 }

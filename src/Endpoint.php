@@ -8,8 +8,9 @@ class Endpoint
     public $table;
     public $foreign;
 
-    public function __construct(string $qs)
+    public function __construct(string $qs = null)
     {
+        $qs = $qs ?? filter_input(INPUT_GET, 'endpoint');
         $endpoint = $this->fill_endpoint($qs);
 
         $this->table = $endpoint[0];

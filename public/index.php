@@ -13,27 +13,24 @@ use HCTorres02\SimpleAPI\{
     Query,
     Request,
     Response,
+    Session,
     Validator
 };
 
 try {
-    $env = realpath(__DIR__ . '/../.env');
-    $qs = filter_input(INPUT_GET, 'endpoint');
-
-    $parser = new Parser($env);
+    $parser = new Parser;
+    $endpoint = new Endpoint;
     $db = new Database($parser->database);
 
-    $_SESSION = $db->build_schema([
-        'aliases' => $parser->aliases,
-        'excluded' => $parser->excluded
-    ]);
+    if (!Session::get('tables')) {
+        Session::set('*', $db->build_schema([
+            'aliases' => $parser->aliases,
+            'excluded' => $parser->excluded,
+        ]));
+    }
 
-    Response::body(200, $_SESSION);
 
-    $endpoint = new Endpoint($qs);
-    $request = new Request;
-
-    Validator::validade_request($endpoint);
+    Validator::validate_endpoint($endpoint);
 
     $model = new Model($endpoint->table);
     $query = new Query($endpoint->table);
@@ -60,6 +57,8 @@ try {
             break;
 
         case 'POST':
+            Validator::validate_request_data($endpoint);
+
             $query->insert(Request::data_cols())
                 ->values(Request::data());
 
@@ -73,6 +72,8 @@ try {
             break;
 
         case 'PUT':
+            Validator::validate_request_data($endpoint);
+
             $query->update(Request::data())
                 ->where_id($endpoint->id);
 

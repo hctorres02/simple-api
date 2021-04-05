@@ -9,14 +9,14 @@ class Database
     public $pdo;
     public $dbname;
 
-    public function __construct(array $database)
+    public function __construct(array $db_info)
     {
-        $drive = $database['drive'];
-        $host = $database['host'];
-        $dbname = $database['dbname'];
-        $user = $database['user'];
-        $pass = $database['pass'];
-        $charset = $database['charset'];
+        $drive = $db_info['drive'];
+        $host = $db_info['host'];
+        $dbname = $db_info['dbname'];
+        $user = $db_info['user'];
+        $pass = $db_info['pass'];
+        $charset = $db_info['charset'];
 
         $dsn = "{$drive}:host={$host};dbname={$dbname};charset={$charset}";
 
@@ -31,18 +31,10 @@ class Database
 
     public function build_schema(array $meta): array
     {
-        // if (Session::get('tables') && Session::get('references')) {
-        //     return;
-        // }
-
-        $meta['tables'] = $this->generate_tables();
-        $meta['references'] = $this->generate_references();
-
-        // foreach ($meta as $key => $value) {
-        //     Session::set($key, $value);
-        // }
-
-        return $meta;
+        return array_merge($meta, [
+            'tables' => $this->generate_tables(),
+            'references' => $this->generate_references()
+        ]);
     }
 
     private function generate_tables(): array
