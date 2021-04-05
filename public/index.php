@@ -7,7 +7,6 @@ require '../vendor/autoload.php';
 
 use HCTorres02\SimpleAPI\{
     Database,
-    Endpoint,
     Model,
     Parser,
     Query,
@@ -18,35 +17,39 @@ use HCTorres02\SimpleAPI\{
 };
 
 try {
-    $parser = new Parser;
-    $endpoint = new Endpoint;
+    $parser = new Parser();
+    $request = new Request();
     $db = new Database($parser->database);
 
     if (!Session::get('tables')) {
-        Session::set('*', $db->build_schema([
+        $meta = [
             'aliases' => $parser->aliases,
             'excluded' => $parser->excluded,
-        ]));
+            'tables' => $db->generate_tables(),
+            'references' => $db->generate_references()
+        ];
+
+        Session::set('*', $meta);
     }
 
-    Validator::validate_endpoint($endpoint);
+    Validator::validate_request($request);
 
-    $model = new Model($endpoint->table);
-    $query = new Query($endpoint->table);
+    $model = new Model($request->table);
+    $query = new Query($request->table);
 
     switch (Request::method()) {
         case 'GET':
-            if ($endpoint->foreign) {
-                $model->add_foreign($endpoint->foreign);
+            if ($request->foreign) {
+                $model->add_foreign($request->foreign);
 
                 $query->select($model->cols)
-                    ->join_on($endpoint->foreign, $model->foreign_refs);
+                    ->join_on($request->foreign, $model->foreign_refs);
             } else {
                 $query->select($model->cols_filtered_aliased);
             }
 
-            if ($endpoint->id) {
-                $query->where_id($endpoint->id);
+            if ($request->id) {
+                $query->where_id($request->id);
             }
 
             $data = $db->select($query);
@@ -56,7 +59,7 @@ try {
             break;
 
         case 'POST':
-            Validator::validate_request_data($endpoint);
+            Validator::validate_request_data($request);
 
             $query->insert(Request::data_cols())
                 ->values(Request::data());
@@ -71,15 +74,15 @@ try {
             break;
 
         case 'PUT':
-            Validator::validate_request_data($endpoint);
+            Validator::validate_request_data($request);
 
             $query->update(Request::data())
-                ->where_id($endpoint->id);
+                ->where_id($request->id);
 
             $db->update($query);
 
             $query->select($model->cols)
-                ->where_id($endpoint->id);
+                ->where_id($request->id);
 
             $data = $db->select($query);
 
@@ -87,7 +90,7 @@ try {
             break;
 
         case 'DELETE':
-            $query->delete($endpoint->id);
+            $query->delete($request->id);
 
             $data = $db->delete($query);
 

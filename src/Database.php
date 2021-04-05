@@ -29,15 +29,7 @@ class Database
         $this->pdo = new PDO($dsn, $user, $pass, $options);
     }
 
-    public function build_schema(array $meta): array
-    {
-        return array_merge($meta, [
-            'tables' => $this->generate_tables(),
-            'references' => $this->generate_references()
-        ]);
-    }
-
-    private function generate_tables(): array
+    public function generate_tables(): array
     {
         $tables = [];
         $columns = [
@@ -50,7 +42,7 @@ class Database
             ->where('table_schema', $this->dbname)
             ->order_by('table_name', 'ordinal_position');
 
-        $sql = $query->get();
+        $sql = $query->get_sql();
         $binds = $query->get_binds();
 
         $stmt = $this->pdo->prepare($sql);
@@ -66,7 +58,7 @@ class Database
         return $tables;
     }
 
-    private function generate_references(): array
+    public function generate_references(): array
     {
         $references = [];
         $columns = [
@@ -81,7 +73,7 @@ class Database
             ->where_is('referenced_table_name', 'NOT NULL')
             ->and('table_schema', $this->dbname);
 
-        $sql = $query->get();
+        $sql = $query->get_sql();
         $binds = $query->get_binds();
 
         $stmt = $this->pdo->prepare($sql);
@@ -105,7 +97,7 @@ class Database
 
     public function select(Query $query)
     {
-        $sql = $query->get();
+        $sql = $query->get_sql();
         $binds = $query->get_binds();
 
         $stmt = $this->pdo->prepare($sql);
@@ -117,7 +109,7 @@ class Database
 
     public function insert(Query $query)
     {
-        $sql = $query->get();
+        $sql = $query->get_sql();
         $binds = $query->get_binds();
 
         $stmt = $this->pdo->prepare($sql);
@@ -129,7 +121,7 @@ class Database
 
     public function update(Query $query)
     {
-        $sql = $query->get();
+        $sql = $query->get_sql();
         $binds = $query->get_binds();
 
         $stmt = $this->pdo->prepare($sql);
@@ -141,7 +133,7 @@ class Database
 
     public function delete(Query $query)
     {
-        $sql = $query->get();
+        $sql = $query->get_sql();
         $binds = $query->get_binds();
 
         $stmt = $this->pdo->prepare($sql);

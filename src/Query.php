@@ -145,7 +145,7 @@ class Query
             : "{$column} = {$bind}";
     }
 
-    public function get(): string
+    public function get_sql(): string
     {
         return $this->sql;
     }
