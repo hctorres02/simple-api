@@ -29,7 +29,6 @@ try {
         ]));
     }
 
-
     Validator::validate_endpoint($endpoint);
 
     $model = new Model($endpoint->table);
