@@ -1,59 +1,45 @@
 <?php
 
-session_start();
-header('content-type: application/json; charset=utf-8');
+use HCTorres02\SimpleAPI\Database;
+use HCTorres02\SimpleAPI\Http\Request;
+use HCTorres02\SimpleAPI\Http\Response;
+use HCTorres02\SimpleAPI\Query;
+use HCTorres02\SimpleAPI\Storage\Schema;
+use HCTorres02\SimpleAPI\Utils\Parser;
+use HCTorres02\SimpleAPI\Utils\Validator;
 
 require '../vendor/autoload.php';
 
-use HCTorres02\SimpleAPI\{
-    Database,
-    Model,
-    Query
-};
-
-use HCTorres02\SimpleAPI\Storage\{
-    Session
-};
-
-use HCTorres02\SimpleAPI\Http\{
-    Request,
-    Response
-};
-
-use HCTorres02\SimpleAPI\Utils\{
-    Parser,
-    Validator
-};
+session_start();
+header('content-type: application/json; charset=utf-8');
 
 try {
     $env = realpath(__DIR__ . '/../.env');
     $parser = new Parser($env);
     $db = new Database($parser);
-    $request = new Request();
+    $request = new Request;
 
-    if (!Session::get('tables')) {
-        $meta = [
-            'tables' => $db->generate_tables(),
-            'references' => $db->generate_references()
-        ];
-
-        Session::set('*', $meta);
+    if (!Schema::get(Schema::ALL)) {
+        Schema::build_schema($db);
     }
 
     Validator::validate_request($request);
 
-    $model = new Model($request->table);
-    $query = new Query($request->table);
+    $table = Schema::get($request->table);
 
-    switch (Request::method()) {
+    if ($request->foreign) {
+        $foreign = Schema::get($request->foreign);
+    }
+
+    switch ($request->method) {
         case 'GET':
-            if ($request->foreign) {
-                $model->add_foreign($request->foreign);
+            $query = Query::select($table->columns)
+                ->from($table->name);
 
-                $query->select($model->cols)
-                    ->join_on($request->foreign, $model->foreign_refs);
-            } else {
-                $query->select($model->cols_filtered_aliased);
+            if (isset($foreign)) {
+                $query->add_columns($foreign->columns)
+                    ->join($foreign->name)
+                    ->on($foreign->references->{$table->name});
             }
 
             if ($request->id) {
@@ -62,18 +48,19 @@ try {
 
             $data = $db->select($query);
 
-            Response::body_if(404, !$data && $request->id);
             Response::body(200, $data);
             break;
 
         case 'POST':
             Validator::validate_request_data($request);
 
-            $query->insert(Request::data_cols())
-                ->values(Request::data());
+            $data = Request::data();
+            $query = Query::insert_into($table->name)
+                ->values($data);
 
             $id = $db->insert($query);
-            $query->select($model->cols)
+            $query = Query::select($table->columns)
+                ->from($table->name)
                 ->where_id($id);
 
             $data = $db->select($query);
@@ -82,27 +69,11 @@ try {
             break;
 
         case 'PUT':
-            Validator::validate_request_data($request);
-
-            $query->update(Request::data())
-                ->where_id($request->id);
-
-            $db->update($query);
-
-            $query->select($model->cols)
-                ->where_id($request->id);
-
-            $data = $db->select($query);
-
-            Response::body(200, $data);
+            // TODO
             break;
 
         case 'DELETE':
-            $query->delete($request->id);
-
-            $data = $db->delete($query);
-
-            Response::body(200, $data);
+            // TODO
             break;
 
         default:
@@ -110,5 +81,9 @@ try {
             break;
     }
 } catch (PDOException $e) {
+    if (in_array($request->method, ['POST', 'PUT', 'DELETE'])) {
+        $db->pdo->rollBack();
+    }
+
     Response::body(500, $e->getMessage());
 }

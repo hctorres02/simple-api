@@ -3,15 +3,15 @@
 namespace HCTorres02\SimpleAPI;
 
 use HCTorres02\SimpleAPI\Utils\Parser;
-use \PDO;
+use PDO;
 
 class Database
 {
     public $pdo;
     public $dbname;
 
-    private $aliases;
-    private $excluded;
+    public $aliases;
+    public $excluded;
 
     public function __construct(Parser $parser)
     {
@@ -37,7 +37,7 @@ class Database
         $this->pdo = new PDO($dsn, $user, $pass, $options);
     }
 
-    public function generate_tables(): array
+    public function get_tables(): array
     {
         $tables = [];
         $columns = [
@@ -45,8 +45,8 @@ class Database
             'column_name'
         ];
 
-        $query = (new Query('information_schema.columns'))
-            ->select($columns)
+        $query = Query::select($columns)
+            ->from('information_schema.columns')
             ->where('table_schema', $this->dbname)
             ->order_by('table_name', 'ordinal_position');
 
@@ -66,7 +66,7 @@ class Database
         return $tables;
     }
 
-    public function generate_references(): array
+    public function get_references(): array
     {
         $references = [];
         $columns = [
@@ -76,8 +76,8 @@ class Database
             'referenced_column_name'
         ];
 
-        $query = (new Query('information_schema.key_column_usage'))
-            ->select($columns)
+        $query = Query::select($columns)
+            ->from('information_schema.key_column_usage')
             ->where_is('referenced_table_name', 'NOT NULL')
             ->and('table_schema', $this->dbname);
 
@@ -120,9 +120,13 @@ class Database
         $sql = $query->get_sql();
         $binds = $query->get_binds();
 
+        $this->pdo->beginTransaction();
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($binds);
         $result = $this->pdo->lastInsertId();
+
+        $this->pdo->commit();
 
         return $result;
     }

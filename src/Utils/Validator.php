@@ -2,14 +2,9 @@
 
 namespace HCTorres02\SimpleAPI\Utils;
 
-use HCTorres02\SimpleAPI\Http\{
-    Request,
-    Response
-};
-
-use HCTorres02\SimpleAPI\Storage\{
-    Session
-};
+use HCTorres02\SimpleAPI\Http\Request;
+use HCTorres02\SimpleAPI\Http\Response;
+use HCTorres02\SimpleAPI\Storage\Schema;
 
 class Validator
 {
@@ -22,16 +17,17 @@ class Validator
 
     public static function validate_request(Request $request)
     {
-        $tables = Session::get('tables');
-        $references = Session::get('references');
+        $tables = Schema::get(Schema::ALL, true);
+        $references = Schema::get(Schema::SCHEMA_REFERENCES, true);
 
         $id = $request->id;
         $table = $request->table;
         $foreign = $request->foreign;
+        $method = $request->method;
 
-        $is_put_or_delete = in_array(Request::method(), ['PUT', 'DELETE']);
-        $table_exists = in_array($table, array_keys($tables));
-        $foreign_exists = in_array($foreign, array_keys($references));
+        $is_put_or_delete = in_array($method, ['PUT', 'DELETE']);
+        $table_exists = in_array($table, $tables);
+        $foreign_exists = in_array($foreign, $references);
 
         $tests = [
             [
@@ -57,12 +53,12 @@ class Validator
 
     public static function validate_request_data(Request $request)
     {
-        $tables = Session::get('tables');
-        $table = $tables[$request->table];
+        $table = Schema::get($request->table);
+        $method = $request->method;
 
         $data = $request::data();
-        $is_post_or_put = in_array($request::method(), ['POST', 'PUT']);
-        $unknown_data_col = $request::has_unknown_data_column($table);
+        $is_post_or_put = in_array($method, ['POST', 'PUT']);
+        $unknown_data_col = $request::has_unknown_data_column($table->columns_all);
 
         $tests = [
             [
