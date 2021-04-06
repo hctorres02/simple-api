@@ -7,6 +7,7 @@ class Request
     public $id;
     public $table;
     public $foreign;
+    public $method;
 
     public function __construct(string $qs = null)
     {
@@ -16,23 +17,20 @@ class Request
         $this->table = $endpoint[0];
         $this->id = $endpoint[1];
         $this->foreign = $endpoint[2];
+        $this->method = $endpoint[3] ?? filter_input(INPUT_SERVER, 'REQUEST_METHOD');
     }
 
     private function fill_endpoint(string $qs): array
     {
         $e = explode('/', $qs);
-        $f = array_fill(0, 3, null);
+        $c = count($e);
+        $f = array_fill(0, 4, null);
 
-        for ($i = 0; $i < count($e); $i++) {
+        for ($i = 0; $i < $c; $i++) {
             $f[$i] = $e[$i] ?: null;
         }
 
         return $f;
-    }
-
-    public static function method()
-    {
-        return filter_input(INPUT_SERVER, 'REQUEST_METHOD');
     }
 
     public static function data(): ?array

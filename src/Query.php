@@ -5,55 +5,87 @@ namespace HCTorres02\SimpleAPI;
 class Query
 {
     private $sql;
+    private $sql_s;
     private $binds;
     private $table;
+    private $columns;
 
-    public function __construct(string $table)
+    public function __construct(array $props = [])
     {
         $this->binds = [];
-        $this->table = $table;
+
+        foreach ($props as $prop => $value) {
+            $this->{$prop} = $value;
+        }
+
+        $this->sql_s = $this->sql;
     }
 
-    public function select(array $columns): self
+    public static function select(array $columns): self
     {
-        $this->binds = [];
-        $columns = implode(', ', $columns);
-        $this->sql = "SELECT {$columns} FROM {$this->table}";
+        $raw_columns = implode(', ', $columns);
+
+        return new self([
+            'sql' => "SELECT {$raw_columns}",
+            'columns' => $columns
+        ]);
+    }
+
+    public function add_columns(array $columns): self
+    {
+        $raw_columns = implode(', ', $columns);
+        $sql_s = "{$this->sql_s}, {$raw_columns}";
+        $sql = str_replace($this->sql_s, $sql_s, $this->sql);
+
+        $this->sql = $sql;
+        $this->sql_s = $sql_s;
+        $this->columns = array_merge($this->columns, $columns);
 
         return $this;
     }
 
-    public function insert(array $columns): self
+    public static function insert_into(string $table): self
     {
-        $this->binds = [];
-        $columns = implode(', ', $columns);
-        $this->sql = "INSERT INTO {$this->table} ({$columns})";
+        return new self([
+            'sql' => "INSERT INTO {$table}",
+            'table' => $table
+        ]);
+    }
+
+    public static function update(string $table): self
+    {
+        return new self([
+            'sql' => "UPDATE {$table}",
+            'table' => $table
+        ]);
+    }
+
+    public static function delete(): self
+    {
+        return new self([
+            'sql' => 'DELETE'
+        ]);
+    }
+
+    public function join(string $foreign): self
+    {
+        $this->sql = "{$this->sql} JOIN {$foreign}";
 
         return $this;
     }
 
-    public function update(array $columns): self
+    public function set(array $data): self
     {
-        $this->binds = [];
-        $values = $this->dataset($columns, true);
-        $this->sql = "UPDATE {$this->table} SET {$values}";
+        $raw_values = $this->to_raw($data, true);
+        $this->sql = "{$this->sql} SET {$raw_values}";
 
         return $this;
     }
 
-    public function delete(int $id): self
-    {
-        $this->binds = [];
-        $this->sql = "DELETE FROM {$this->table}";
-        $this->where_id($id);
-
-        return $this;
-    }
-
-    public function join_on(string $foreign, array $references): self
+    public function on(array $references): self
     {
         $references = implode(' = ', $references);
-        $this->sql = "{$this->sql} JOIN {$foreign} ON {$references}";
+        $this->sql = "{$this->sql} ON {$references}";
 
         return $this;
     }
@@ -105,13 +137,15 @@ class Query
 
     public function values(array $data): self
     {
-        $values = $this->dataset($data, false);
-        $this->sql = "{$this->sql} VALUES ({$values})";
+        $raw_columns = implode(', ', array_keys($data));
+        $raw_values = $this->to_raw($data);
+
+        $this->sql = "{$this->sql} ({$raw_columns}) VALUES ({$raw_values})";
 
         return $this;
     }
 
-    private function dataset(array $data, bool $key_value): string
+    private function to_raw(array $data, bool $key_value = false): string
     {
         foreach ($data as $key => $value) {
             $bind = $this->bind($key, $value);
@@ -142,6 +176,14 @@ class Query
         return $param_b
             ? "{$column} {$param_a} {$bind}"
             : "{$column} = {$bind}";
+    }
+
+    public function from(string $table): self
+    {
+        $this->table = $table;
+        $this->sql = "{$this->sql} FROM {$table}";
+
+        return $this;
     }
 
     public function get_sql(): string
