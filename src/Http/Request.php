@@ -20,6 +20,14 @@ class Request
         $this->method = $endpoint[3] ?? filter_input(INPUT_SERVER, 'REQUEST_METHOD');
     }
 
+    public function get_data(): ?array
+    {
+        $input = file_get_contents('php://input');
+        $data = json_decode($input, true);
+
+        return $data ?? [];
+    }
+
     private function fill_endpoint(string $qs): array
     {
         $e = explode('/', $qs);
@@ -33,29 +41,25 @@ class Request
         return $f;
     }
 
-    public static function data(): ?array
+    private static function check_column(string $column, array $table)
     {
-        $input = file_get_contents('php://input');
-        $data = json_decode($input, true);
-
-        return $data ?? [];
-    }
-
-    public static function data_cols(): ?array
-    {
-        return array_keys(self::data());
-    }
-
-    public static function has_unknown_data_column(array $table)
-    {
-        $cols = self::data_cols();
-
-        foreach ($cols as $column) {
-            if (!in_array($column, $table)) {
-                return $column;
-            }
+        if (!in_array($column, $table)) {
+            return $column;
         }
 
         return false;
+    }
+
+    public function has_unknown_data_column(array $data, array $table)
+    {
+        foreach ($data as $row => $value) {
+            if (is_array($value)) {
+                foreach (array_keys($value) as $col) {
+                    return self::check_column($col, $table);
+                }
+            }
+
+            return self::check_column($row, $table);
+        }
     }
 }

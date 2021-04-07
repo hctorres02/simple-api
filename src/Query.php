@@ -138,11 +138,18 @@ class Query
     public function values(array $data): self
     {
         $raw_columns = implode(', ', array_keys($data));
-        $raw_values = $this->to_raw($data);
+        $raw_values = $this->add_values($data);
 
         $this->sql = "{$this->sql} ({$raw_columns}) VALUES ({$raw_values})";
 
         return $this;
+    }
+
+    private function add_values(array $data, int $i = 0): string
+    {
+        $raw_values = $this->to_raw($data);
+
+        return "({$raw_values})";
     }
 
     private function to_raw(array $data, bool $key_value = false): string

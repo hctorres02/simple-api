@@ -54,7 +54,12 @@ try {
         case 'POST':
             Validator::validate_request_data($request);
 
-            $data = Request::data();
+            $data = $request->get_data();
+
+            if (isset($data[0])) {
+                Response::body(501, 'insert data from array not implemented');
+            }
+
             $query = Query::insert_into($table->name)
                 ->values($data);
 
@@ -71,7 +76,11 @@ try {
         case 'PUT':
             Validator::validate_request_data($request);
 
-            $data = Request::data();
+            if (isset($data[0])) {
+                Response::body(501, 'update data from array not implemented');
+            }
+
+            $data = $request->get_data();
             $query = Query::update($table->name)
                 ->set($data)
                 ->where_id($request->id);

@@ -53,12 +53,12 @@ class Validator
 
     public static function validate_request_data(Request $request)
     {
-        $table = Schema::get($request->table);
         $method = $request->method;
+        $data = $request->get_data();
+        $table = Schema::get($request->table);
 
-        $data = $request::data();
         $is_post_or_put = in_array($method, ['POST', 'PUT']);
-        $unknown_data_col = $request::has_unknown_data_column($table->columns_all);
+        $unknown_data_col = $request->has_unknown_data_column($data, $table->columns_all);
 
         $tests = [
             [
