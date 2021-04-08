@@ -2,26 +2,25 @@
 
 namespace HCTorres02\SimpleAPI\Storage;
 
-use HCTorres02\SimpleAPI\Utils\Parser;
 use PDO;
 
 class Database
 {
     public $pdo;
     public $dbname;
-
     public $aliases;
     public $excluded;
 
-    public function __construct(Parser $parser)
+    public function __construct()
     {
-        $db_info = $parser->database;
+        $env = $_ENV['app'];
+        $db_info =  $env->database;
 
-        $host = $db_info['host'];
-        $dbname = $db_info['dbname'];
-        $user = $db_info['user'];
-        $pass = $db_info['pass'];
-        $charset = $db_info['charset'];
+        $host = $db_info->host;
+        $dbname = $db_info->dbname;
+        $user = $db_info->user;
+        $pass = $db_info->pass;
+        $charset = $db_info->charset;
 
         $dsn = "mysql:host={$host};dbname={$dbname};charset={$charset}";
 
@@ -30,8 +29,8 @@ class Database
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
         ];
 
-        $this->aliases = $parser->aliases;
-        $this->excluded = $parser->excluded;
+        $this->aliases = $env->aliases;
+        $this->excluded = $env->excluded;
         $this->dbname = $dbname;
         $this->pdo = new PDO($dsn, $user, $pass, $options);
     }

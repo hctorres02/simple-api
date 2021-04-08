@@ -44,7 +44,7 @@ class Schema
         $references = $db->get_references();
 
         foreach ($tables as $table => $columns) {
-            $alias = $db->aliases[$table] ?? null;
+            $alias = $db->aliases->{$table} ?? null;
             $excluded = $db->excluded ?? [];
 
             $cols_fd = array_values(array_diff($columns, $excluded));

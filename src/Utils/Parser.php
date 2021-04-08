@@ -4,15 +4,12 @@ namespace HCTorres02\SimpleAPI\Utils;
 
 class Parser
 {
-    private $env;
-
-    public function __construct(string $filename)
+    public static function make_global(string $filename): void
     {
-        $this->env = parse_ini_file($filename, true);
-    }
+        $e = parse_ini_file($filename, true);
+        $n = json_encode($e);
+        $v = json_decode($n);
 
-    public function __get(string $key)
-    {
-        return $this->env[$key];
+        $_ENV['app'] = $v;
     }
 }

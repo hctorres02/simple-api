@@ -5,10 +5,9 @@ use HCTorres02\SimpleAPI\Http\Response;
 use HCTorres02\SimpleAPI\Storage\Database;
 use HCTorres02\SimpleAPI\Storage\Schema;
 use HCTorres02\SimpleAPI\Storage\Query;
-use HCTorres02\SimpleAPI\Utils\Parser;
 use HCTorres02\SimpleAPI\Utils\Validator;
 
-require realpath(__DIR__ . '/../vendor/autoload.php');
+require realpath(__DIR__ . '/../src/App.php');
 
 session_start();
 
@@ -19,9 +18,7 @@ header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 try {
-    $env = realpath(__DIR__ . '/../.env');
-    $parser = new Parser($env);
-    $db = new Database($parser);
+    $db = new Database();
     $request = new Request;
     $schema = new Schema($request);
     $validator = new Validator($schema);
