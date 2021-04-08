@@ -48,16 +48,12 @@ class Database
             ->where('table_schema', $this->dbname)
             ->order_by('table_name', 'ordinal_position');
 
-        $sql = $query->get_sql();
-        $binds = $query->get_binds();
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($binds);
-        $result = $stmt->fetchAll();
+        $result = $this->select($query);
 
         foreach ($result as $row) {
             $tb_name = strtolower($row['table_name']);
             $col_name = strtolower($row['column_name']);
+
             $tables[$tb_name][] = $col_name;
         }
 
@@ -79,12 +75,7 @@ class Database
             ->where_is('referenced_table_name', 'NOT NULL')
             ->and('table_schema', $this->dbname);
 
-        $sql = $query->get_sql();
-        $binds = $query->get_binds();
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($binds);
-        $result = $stmt->fetchAll();
+        $result = $this->select($query);
 
         foreach ($result as $row) {
             $tb_name = $row['table_name'];
