@@ -35,7 +35,7 @@ class Validator
         $references = $this->schema->get_references(true);
         $request = $this->schema->request;
 
-        $id = $request->id;
+        $id = (int) $request->id;
         $table = $request->table;
         $foreign = $request->foreign;
         $method = $request->method;
@@ -43,6 +43,7 @@ class Validator
         $is_put_or_delete = in_array($method, ['PUT', 'DELETE']);
         $table_exists = in_array($table, $tables);
         $foreign_exists = in_array($foreign, $references);
+        $id_gt_zero = $id > 0;
 
         $tests = [
             [
@@ -52,6 +53,10 @@ class Validator
             [
                 'result' => !$id && $is_put_or_delete,
                 'message' => 'id is required'
+            ],
+            [
+                'result' => $foreign && !$id_gt_zero,
+                'message' => 'id must be greater than zero'
             ],
             [
                 'result' => !$table_exists,
