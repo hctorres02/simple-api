@@ -17,14 +17,13 @@ class Database
     {
         $db_info = $parser->database;
 
-        $drive = $db_info['drive'];
         $host = $db_info['host'];
         $dbname = $db_info['dbname'];
         $user = $db_info['user'];
         $pass = $db_info['pass'];
         $charset = $db_info['charset'];
 
-        $dsn = "{$drive}:host={$host};dbname={$dbname};charset={$charset}";
+        $dsn = "mysql:host={$host};dbname={$dbname};charset={$charset}";
 
         $options = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
