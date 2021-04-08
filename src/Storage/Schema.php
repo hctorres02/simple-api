@@ -2,8 +2,8 @@
 
 namespace HCTorres02\SimpleAPI\Storage;
 
-use HCTorres02\SimpleAPI\Database;
 use HCTorres02\SimpleAPI\Http\Request;
+use HCTorres02\SimpleAPI\Storage\Database;
 
 class Schema
 {

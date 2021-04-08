@@ -7,6 +7,7 @@ class Response
     public static function body(int $code, $data = null): void
     {
         header("HTTP/1.1 {$code}");
+
         echo json_encode([
             'code' => $code,
             'data' => $data

@@ -1,10 +1,10 @@
 <?php
 
-use HCTorres02\SimpleAPI\Database;
 use HCTorres02\SimpleAPI\Http\Request;
 use HCTorres02\SimpleAPI\Http\Response;
-use HCTorres02\SimpleAPI\Query;
+use HCTorres02\SimpleAPI\Storage\Database;
 use HCTorres02\SimpleAPI\Storage\Schema;
+use HCTorres02\SimpleAPI\Storage\Query;
 use HCTorres02\SimpleAPI\Utils\Parser;
 use HCTorres02\SimpleAPI\Utils\Validator;
 
@@ -118,5 +118,7 @@ try {
         $db->pdo->rollBack();
     }
 
+    Response::body(500, $e->getMessage());
+} catch (Exception $e) {
     Response::body(500, $e->getMessage());
 }
