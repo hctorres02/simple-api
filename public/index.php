@@ -19,12 +19,11 @@ try {
     $db = new Database($parser);
     $request = new Request;
     $schema = new Schema($request);
+    $validator = new Validator($schema);
 
     if (!$schema->get_tables()) {
         $schema->build($db);
     }
-
-    $validator = new Validator($schema);
 
     if (!$validator->validate_request()) {
         Response::body($validator->code, $validator->message);
