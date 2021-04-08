@@ -140,7 +140,7 @@ class Query
         $raw_columns = implode(', ', array_keys($data));
         $raw_values = $this->add_values($data);
 
-        $this->sql = "{$this->sql} ({$raw_columns}) VALUES ({$raw_values})";
+        $this->sql = "{$this->sql} ({$raw_columns}) VALUES {$raw_values}";
 
         return $this;
     }
