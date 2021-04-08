@@ -3,6 +3,7 @@
 namespace HCTorres02\SimpleAPI\Storage;
 
 use HCTorres02\SimpleAPI\Database;
+use HCTorres02\SimpleAPI\Http\Request;
 
 class Schema
 {
@@ -10,7 +11,34 @@ class Schema
     public const SCHEMA = 'schema';
     public const SCHEMA_REFERENCES = 'schema_references';
 
-    public static function build_schema(Database $db): void
+    public $request;
+
+    public function __construct(Request $request)
+    {
+        $this->request = $request;
+    }
+
+    public function get_tables(bool $only_keys = false)
+    {
+        return self::get(self::ALL, $only_keys);
+    }
+
+    public function get_references(bool $only_keys = false)
+    {
+        return self::get(self::SCHEMA_REFERENCES, $only_keys);
+    }
+
+    public function get_request_table()
+    {
+        return self::get($this->request->table);
+    }
+
+    public function get_request_foreign()
+    {
+        return self::get($this->request->foreign);
+    }
+
+    public function build(Database $db): void
     {
         $tables = $db->get_tables();
         $references = $db->get_references();
@@ -36,7 +64,7 @@ class Schema
         $_SESSION[self::SCHEMA] = $schema;
     }
 
-    public static function get(string $table, bool $only_keys = false)
+    private static function get(string $table, bool $only_keys = false)
     {
         if ($only_keys) {
             $schema = self::get($table);

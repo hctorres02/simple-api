@@ -18,25 +18,26 @@ try {
     $parser = new Parser($env);
     $db = new Database($parser);
     $request = new Request;
+    $schema = new Schema($request);
 
-    if (!Schema::get(Schema::ALL)) {
-        Schema::build_schema($db);
+    if (!$schema->get_tables()) {
+        $schema->build($db);
     }
 
-    Validator::validate_request($request);
+    $validator = new Validator($schema);
 
-    $table = Schema::get($request->table);
-
-    if ($request->foreign) {
-        $foreign = Schema::get($request->foreign);
+    if (!$validator->validate_request()) {
+        Response::body($validator->code, $validator->message);
     }
 
     switch ($request->method) {
         case 'GET':
+            $table = $schema->get_request_table();
             $query = Query::select($table->columns)
                 ->from($table->name);
 
-            if (isset($foreign)) {
+            if ($request->foreign) {
+                $foreign = $schema->get_request_foreign();
                 $query->add_columns($foreign->columns)
                     ->join($foreign->name)
                     ->on($foreign->references->{$table->name});
@@ -46,20 +47,19 @@ try {
                 $query->where_id($request->id);
             }
 
+            $query->order_by('id');
             $data = $db->select($query);
 
             Response::body(200, $data);
             break;
 
         case 'POST':
-            Validator::validate_request_data($request);
-
-            $data = $request->get_data();
-
-            if (isset($data[0])) {
-                Response::body(501, 'insert data from array not implemented');
+            if (!$validator->validate_request_data()) {
+                Response::body($validator->code, $validator->message);
             }
 
+            $table = $schema->get_request_table();
+            $data = $request->get_data();
             $query = Query::insert_into($table->name)
                 ->values($data);
 
@@ -74,12 +74,11 @@ try {
             break;
 
         case 'PUT':
-            Validator::validate_request_data($request);
-
-            if (isset($data[0])) {
-                Response::body(501, 'update data from array not implemented');
+            if (!$validator->validate_request_data()) {
+                Response::body($validator->code, $validator->message);
             }
 
+            $table = $schema->get_request_table();
             $data = $request->get_data();
             $query = Query::update($table->name)
                 ->set($data)
@@ -91,6 +90,7 @@ try {
             break;
 
         case 'DELETE':
+            $table = $schema->get_request_table();
             $query = Query::select($table->columns)
                 ->from($table->name)
                 ->where_id($request->id);

@@ -2,23 +2,38 @@
 
 namespace HCTorres02\SimpleAPI\Utils;
 
-use HCTorres02\SimpleAPI\Http\Request;
-use HCTorres02\SimpleAPI\Http\Response;
 use HCTorres02\SimpleAPI\Storage\Schema;
 
 class Validator
 {
-    private static function tester(array $tests): void
+    private $schema;
+    public $message;
+    public $code;
+
+    public function __construct(Schema $schema)
     {
-        foreach ($tests as $test) {
-            Response::body_if(400, $test['result'], $test['message']);
-        }
+        $this->schema = $schema;
     }
 
-    public static function validate_request(Request $request)
+    private function tester(array $tests)
     {
-        $tables = Schema::get(Schema::ALL, true);
-        $references = Schema::get(Schema::SCHEMA_REFERENCES, true);
+        foreach ($tests as $test) {
+            if ($test['result']) {
+                $this->message = $test['message'];
+                $this->code = $test['code'] ?? 400;
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function validate_request()
+    {
+        $tables = $this->schema->get_tables(true);
+        $references = $this->schema->get_references(true);
+        $request = $this->schema->request;
 
         $id = $request->id;
         $table = $request->table;
@@ -43,24 +58,31 @@ class Validator
                 'message' => "table '{$table}' doesn't exists!"
             ],
             [
+                'code' => 501,
                 'result' => $foreign && !$foreign_exists,
                 'message' => "table '{$foreign}' doesn't implemented"
             ]
         ];
 
-        self::tester($tests);
+        return $this->tester($tests);
     }
 
-    public static function validate_request_data(Request $request)
+    public function validate_request_data()
     {
+        $table = $this->schema->get_request_table();
+        $request = $this->schema->request;
         $method = $request->method;
         $data = $request->get_data();
-        $table = Schema::get($request->table);
 
         $is_post_or_put = in_array($method, ['POST', 'PUT']);
         $unknown_data_col = $request->has_unknown_data_column($data, $table->columns_all);
 
         $tests = [
+            [
+                'code' => 501,
+                'result' => isset($data[0]),
+                'message' => 'create|update data from array doesn\'t implemented'
+            ],
             [
                 'result' => $is_post_or_put && !$data,
                 'message' => 'data is required'
@@ -72,6 +94,6 @@ class Validator
 
         ];
 
-        self::tester($tests);
+        return $this->tester($tests);
     }
 }
