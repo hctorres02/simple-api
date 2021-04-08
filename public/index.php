@@ -46,7 +46,7 @@ try {
                 $query->where_id($request->id);
             }
 
-            $query->order_by('id');
+            $query->order_by("{$table->name}.id");
             $data = $db->select($query);
 
             Response::body(200, $data);
