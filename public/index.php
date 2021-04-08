@@ -8,7 +8,7 @@ use HCTorres02\SimpleAPI\Storage\Query;
 use HCTorres02\SimpleAPI\Utils\Parser;
 use HCTorres02\SimpleAPI\Utils\Validator;
 
-require __DIR__ . '/../vendor/autoload.php';
+require realpath(__DIR__ . '/../vendor/autoload.php');
 
 session_start();
 header('content-type: application/json; charset=utf-8');
