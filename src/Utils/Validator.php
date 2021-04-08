@@ -43,7 +43,7 @@ class Validator
         $is_put_or_delete = in_array($method, ['PUT', 'DELETE']);
         $table_exists = in_array($table, $tables);
         $foreign_exists = in_array($foreign, $references);
-        $is_id_valid = $id && ctype_digit($id) || $foreign && ctype_digit($id);
+        $id_is_invalid = ($foreign && !$id) || ($id && !ctype_digit($id));
 
         $tests = [
             [
@@ -55,7 +55,7 @@ class Validator
                 'message' => 'id is required'
             ],
             [
-                'result' => !$is_id_valid,
+                'result' => $id_is_invalid,
                 'message' => 'id must be integer and greater than zero'
             ],
             [
