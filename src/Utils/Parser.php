@@ -2,14 +2,19 @@
 
 namespace HCTorres02\SimpleAPI\Utils;
 
+use stdClass;
+
 class Parser
 {
     public static function make_global(string $filename): void
     {
-        $e = parse_ini_file($filename, true);
-        $n = json_encode($e);
-        $v = json_decode($n);
+        $parser = parse_ini_file($filename, true);
+        $app = new stdClass;
 
-        $_ENV['app'] = $v;
+        foreach ($parser as $key => $value) {
+            $app->{$key} = $value;
+        }
+
+        $_ENV['app'] = $app;
     }
 }

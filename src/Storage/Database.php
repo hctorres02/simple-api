@@ -14,7 +14,7 @@ class Database
     public function __construct()
     {
         $env = $_ENV['app'];
-        $db_info =  $env->database;
+        $db_info = (object) $env->database;
 
         $host = $db_info->host;
         $dbname = $db_info->dbname;
