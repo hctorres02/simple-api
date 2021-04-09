@@ -46,7 +46,7 @@ class Schema
         $references = $this->build_references();
 
         foreach ($tables as $table => $columns) {
-            $alias = $this->db->aliases->{$table} ?? null;
+            $alias = $this->db->aliases[$table] ?? null;
             $excluded = $this->db->excluded ?? [];
 
             $cols_fd = array_values(array_diff($columns, $excluded));
