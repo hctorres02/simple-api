@@ -23,7 +23,7 @@ class Validator
         foreach ($tests as $test) {
             if ($test['result']) {
                 $this->response = [
-                    'code' => $test['code'] ?: 400,
+                    'code' => $test['code'] ?? 400,
                     'data' => $test['message']
                 ];
 

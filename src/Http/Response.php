@@ -18,13 +18,4 @@ class Response
 
         exit;
     }
-
-    public static function body_if(int $code, bool $condition, $data = null): void
-    {
-        if (!$condition) {
-            return;
-        }
-
-        self::body($code, $data);
-    }
 }
