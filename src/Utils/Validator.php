@@ -94,10 +94,12 @@ class Validator
                 'message' => 'create|update data from array doesn\'t implemented'
             ],
             [
+                'code' => 422,
                 'result' => $is_post_or_put && !$data,
                 'message' => 'data is required'
             ],
             [
+                'code' => 422,
                 'result' => $data && $unknown_data_col,
                 'message' => "column '{$unknown_data_col}' doesn't exists!"
             ]
