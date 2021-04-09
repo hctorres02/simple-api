@@ -10,8 +10,7 @@ class Validator
     private $request;
     private $schema;
 
-    public $message;
-    public $code;
+    public $response;
 
     public function __construct(Request $request, Schema $schema)
     {
@@ -23,8 +22,10 @@ class Validator
     {
         foreach ($tests as $test) {
             if ($test['result']) {
-                $this->message = $test['message'];
-                $this->code = $test['code'] ?? 400;
+                $this->response = [
+                    'code' => $test['code'] ?: 400,
+                    'data' => $test['message']
+                ];
 
                 return false;
             }

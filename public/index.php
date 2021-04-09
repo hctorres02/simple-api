@@ -27,21 +27,18 @@ try {
     }
 
     $validator = new Validator($request, $schema);
+    $request_fail = !$validator->validate_request();
+    $invalid_data = in_array($request->method, ['POST', 'PUT'])
+        && !$validator->validate_request_data();
 
-    if (!$validator->validate_request()) {
-        Response::body($validator->code, $validator->message);
-    }
-
-    if (in_array($request->method, ['POST', 'PUT'])) {
-        if (!$validator->validate_request_data()) {
-            Response::body($validator->code, $validator->message);
-        }
+    if ($request_fail || $invalid_data) {
+        Response::body($validator->response);
     }
 
     $controller = new Controller($db, $schema);
     $response = $controller->get_response($request);
 
-    Response::body($response['code'], $response['data']);
+    Response::body($response);
 } catch (PDOException $e) {
     if (in_array($request->method, ['POST', 'PUT', 'DELETE'])) {
         $db->pdo->rollBack();

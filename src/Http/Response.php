@@ -4,14 +4,17 @@ namespace HCTorres02\SimpleAPI\Http;
 
 class Response
 {
-    public static function body(int $code, $data = null): void
+    public static function body($param_a, $param_b = null): void
     {
-        header("HTTP/1.1 {$code}");
+        if ($param_b) {
+            $param_a = [
+                'code' => $param_a,
+                'data' => $param_b
+            ];
+        }
 
-        echo json_encode([
-            'code' => $code,
-            'data' => $data
-        ]);
+        header("HTTP/1.1 {$param_a['code']}");
+        echo json_encode($param_a);
 
         exit;
     }
