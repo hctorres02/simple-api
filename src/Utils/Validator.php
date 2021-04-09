@@ -2,16 +2,20 @@
 
 namespace HCTorres02\SimpleAPI\Utils;
 
+use HCTorres02\SimpleAPI\Http\Request;
 use HCTorres02\SimpleAPI\Storage\Schema;
 
 class Validator
 {
+    private $request;
     private $schema;
+
     public $message;
     public $code;
 
-    public function __construct(Schema $schema)
+    public function __construct(Request $request, Schema $schema)
     {
+        $this->request = $request;
         $this->schema = $schema;
     }
 
@@ -33,7 +37,7 @@ class Validator
     {
         $tables = $this->schema->get_tables(true);
         $references = $this->schema->get_references(true);
-        $request = $this->schema->request;
+        $request = $this->request;
 
         $id = $request->id;
         $table = $request->table;
@@ -75,7 +79,7 @@ class Validator
     public function validate_request_data()
     {
         $table = $this->schema->get_request_table();
-        $request = $this->schema->request;
+        $request = $this->request;
         $method = $request->method;
         $data = $request->get_data();
 

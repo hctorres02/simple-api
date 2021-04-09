@@ -11,10 +11,12 @@ class Schema
     public const SCHEMA = 'schema';
     public const SCHEMA_REFERENCES = 'schema_references';
 
-    public $request;
+    private $db;
+    private $request;
 
-    public function __construct(Request $request)
+    public function __construct(Database $db, Request $request)
     {
+        $this->db = $db;
         $this->request = $request;
     }
 
@@ -38,14 +40,14 @@ class Schema
         return self::get($this->request->foreign);
     }
 
-    public function build(Database $db): void
+    public function build(): void
     {
-        $tables = $db->get_tables();
-        $references = $db->get_references();
+        $tables = $this->build_tables();
+        $references = $this->build_references();
 
         foreach ($tables as $table => $columns) {
-            $alias = $db->aliases->{$table} ?? null;
-            $excluded = $db->excluded ?? [];
+            $alias = $this->db->aliases->{$table} ?? null;
+            $excluded = $this->db->excluded ?? [];
 
             $cols_fd = array_values(array_diff($columns, $excluded));
             $cols_fd_ad = self::apply_alias($alias, $table, $cols_fd);
@@ -64,7 +66,64 @@ class Schema
         $_SESSION[self::SCHEMA] = $schema;
     }
 
-    private static function get(string $table, bool $only_keys = false)
+    private function build_tables(): array
+    {
+        $tables = [];
+        $columns = [
+            'table_name',
+            'column_name'
+        ];
+
+        $query = Query::select($columns)
+            ->from('information_schema.columns')
+            ->where('table_schema', $this->db->dbname)
+            ->order_by('table_name', 'ordinal_position');
+
+        $result = $this->db->select($query);
+
+        foreach ($result as $row) {
+            $tb_name = strtolower($row['table_name']);
+            $col_name = strtolower($row['column_name']);
+
+            $tables[$tb_name][] = $col_name;
+        }
+
+        return $tables;
+    }
+
+    private function build_references(): array
+    {
+        $references = [];
+        $columns = [
+            'table_name',
+            'column_name',
+            'referenced_table_name',
+            'referenced_column_name'
+        ];
+
+        $query = Query::select($columns)
+            ->from('information_schema.key_column_usage')
+            ->where_is('referenced_table_name', 'NOT NULL')
+            ->and('table_schema', $this->db->dbname);
+
+        $result = $this->db->select($query);
+
+        foreach ($result as $row) {
+            $tb_name = $row['table_name'];
+            $col_name = $row['column_name'];
+            $ref_tb_name = $row['referenced_table_name'];
+            $ref_col_name = $row['referenced_column_name'];
+
+            $references[$tb_name][$ref_tb_name] = [
+                "{$tb_name}.{$col_name}",
+                "{$ref_tb_name}.{$ref_col_name}"
+            ];
+        }
+
+        return $references;
+    }
+
+    public static function get(string $table, bool $only_keys = false)
     {
         if ($only_keys) {
             $schema = self::get($table);

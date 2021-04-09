@@ -35,63 +35,6 @@ class Database
         $this->pdo = new PDO($dsn, $user, $pass, $options);
     }
 
-    public function get_tables(): array
-    {
-        $tables = [];
-        $columns = [
-            'table_name',
-            'column_name'
-        ];
-
-        $query = Query::select($columns)
-            ->from('information_schema.columns')
-            ->where('table_schema', $this->dbname)
-            ->order_by('table_name', 'ordinal_position');
-
-        $result = $this->select($query);
-
-        foreach ($result as $row) {
-            $tb_name = strtolower($row['table_name']);
-            $col_name = strtolower($row['column_name']);
-
-            $tables[$tb_name][] = $col_name;
-        }
-
-        return $tables;
-    }
-
-    public function get_references(): array
-    {
-        $references = [];
-        $columns = [
-            'table_name',
-            'column_name',
-            'referenced_table_name',
-            'referenced_column_name'
-        ];
-
-        $query = Query::select($columns)
-            ->from('information_schema.key_column_usage')
-            ->where_is('referenced_table_name', 'NOT NULL')
-            ->and('table_schema', $this->dbname);
-
-        $result = $this->select($query);
-
-        foreach ($result as $row) {
-            $tb_name = $row['table_name'];
-            $col_name = $row['column_name'];
-            $ref_tb_name = $row['referenced_table_name'];
-            $ref_col_name = $row['referenced_column_name'];
-
-            $references[$tb_name][$ref_tb_name] = [
-                "{$tb_name}.{$col_name}",
-                "{$ref_tb_name}.{$ref_col_name}"
-            ];
-        }
-
-        return $references;
-    }
-
     public function select(Query $query)
     {
         $sql = $query->get_sql();
