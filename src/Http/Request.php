@@ -9,15 +9,14 @@ class Request
     public $foreign;
     public $method;
 
-    public function __construct(string $qs = null)
+    public function __construct(string $qs = null, string $method = null)
     {
-        $qs = $qs ?? filter_input(INPUT_GET, 'endpoint');
         $endpoint = $this->fill_endpoint($qs);
 
-        $this->table = $endpoint[0];
-        $this->id = $endpoint[1];
-        $this->foreign = $endpoint[2];
-        $this->method = $endpoint[3] ?? filter_input(INPUT_SERVER, 'REQUEST_METHOD');
+        $this->id = $endpoint->id;
+        $this->table = $endpoint->table;
+        $this->foreign = $endpoint->foreign;
+        $this->method = $method ?? filter_input(INPUT_SERVER, 'REQUEST_METHOD');
     }
 
     public function get_data(): ?array
@@ -28,19 +27,25 @@ class Request
         return $data ?? [];
     }
 
-    private function fill_endpoint(string $qs): array
+    private function fill_endpoint(?string $qs): object
     {
-        $e = explode('/', $qs);
-        $c = count($e);
-        $f = array_fill(0, 4, null);
+        $qs = $qs ?? filter_input(INPUT_GET, 'endpoint');
 
-        for ($i = 0; $i < $c; $i++) {
-            $f[$i] = $e[$i] ?: null;
+        $parts = explode('/', $qs);
+        $count_parts = count($parts);
+
+        $keys = ['table', 'id', 'foreign'];
+        $count_keys = count($keys);
+        $placeholder = array_fill(0, $count_keys, null);
+
+        for ($i = 0; $i < $count_parts; $i++) {
+            $placeholder[$i] = $parts[$i];
         }
 
-        return $f;
-    }
+        $endpoint = array_combine($keys, $placeholder);
 
+        return (object) $endpoint;
+    }
     private static function check_column(string $column, array $table)
     {
         if (!in_array($column, $table)) {
