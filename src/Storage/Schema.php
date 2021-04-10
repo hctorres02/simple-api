@@ -14,30 +14,39 @@ class Schema
     public $db;
     public $request;
 
+    public $table;
+    public $foreign;
+
     public function __construct(Database $db, Request $request)
     {
         $this->db = $db;
         $this->request = $request;
+
+        if ($this->get_schema(self::ALL)) {
+            $this->build();
+        }
+
+        $this->table = $this->get_schema($request->table);
+        $this->foreign = $this->get_schema($request->foreign);
     }
 
-    public function get_tables(bool $only_keys = false)
+    private function get_schema(?string $table): ?object
     {
-        return self::get(self::ALL, $only_keys);
-    }
+        if (!$table) {
+            return null;
+        }
 
-    public function get_references(bool $only_keys = false)
-    {
-        return self::get(self::SCHEMA_REFERENCES, $only_keys);
-    }
+        $schemas = $_SESSION[self::SCHEMA] ?? null;
 
-    public function get_request_table()
-    {
-        return self::get($this->request->table);
-    }
+        if (self::ALL == $table) {
+            return (object) $schemas;
+        }
 
-    public function get_request_foreign()
-    {
-        return self::get($this->request->foreign);
+        $schema = $schemas[$table] ?? null;
+        $schema_enc = json_encode($schema);
+        $schema_dec = json_decode($schema_enc);
+
+        return $schema_dec;
     }
 
     public function build(): void
@@ -121,33 +130,6 @@ class Schema
         }
 
         return $references;
-    }
-
-    public static function get(?string $table, bool $only_keys = false)
-    {
-        if (!$table) {
-            return null;
-        }
-
-        if ($only_keys) {
-            $schema = self::get($table);
-            return array_keys($schema ?? []);
-        }
-
-        if ($table == self::ALL) {
-            return $_SESSION[self::SCHEMA] ?? null;
-        }
-
-        if ($table == self::SCHEMA_REFERENCES) {
-            return $_SESSION[$table];
-        }
-
-        $schemas = $_SESSION[self::SCHEMA];
-        $schema = $schemas[$table];
-        $schema_enc = json_encode($schema);
-        $schema_dec = json_decode($schema_enc);
-
-        return $schema_dec;
     }
 
     private static function apply_alias(?string $alias, string $tb, array $cols): array

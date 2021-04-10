@@ -18,8 +18,8 @@ class Model
         $this->db = $schema->db;
 
         $this->id = $schema->request->id;
-        $this->table = $schema->get_request_table();
-        $this->foreign = $schema->get_request_foreign();
+        $this->table = $schema->table;
+        $this->foreign = $schema->foreign;
         $this->data = $schema->request->get_data();
     }
 

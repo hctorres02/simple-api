@@ -22,12 +22,8 @@ try {
     $db = new Database();
     $request = new Request();
     $schema = new Schema($db, $request);
-
-    if (!$schema->get_tables()) {
-        $schema->build();
-    }
-
     $validator = new Validator($schema);
+
     $request_fail = !$validator->validate_request();
     $invalid_data = !$validator->validate_request_data();
 

@@ -35,41 +35,33 @@ class Validator
 
     public function validate_request()
     {
-        $tables = $this->schema->get_tables(true);
-        $references = $this->schema->get_references(true);
         $request = $this->request;
-
-        $id = $request->id;
-        $table = $request->table;
-        $foreign = $request->foreign;
         $method = $request->method;
+        $id = $request->id;
 
+        $table = $this->schema->table;
+        $foreign = $this->schema->foreign;
+
+        $is_invalid_id = ($request->foreign && !$id) || ($id && !ctype_digit($id));
         $is_put_or_delete = in_array($method, ['PUT', 'DELETE']);
-        $id_is_invalid = ($foreign && !$id) || ($id && !ctype_digit($id));
-        $table_exists = in_array($table, $tables);
-        $foreign_exists = in_array($foreign, $references);
 
         $tests = [
             [
                 'result' => !$table,
-                'message' => 'table is required',
+                'message' => 'table is required'
             ],
             [
-                'result' => !$id && $is_put_or_delete,
-                'message' => 'id is required'
-            ],
-            [
-                'result' => $id_is_invalid,
+                'result' => $is_invalid_id,
                 'message' => 'id must be integer and greater than zero'
             ],
             [
-                'result' => !$table_exists,
-                'message' => "table '{$table}' doesn't exists!"
+                'result' => $is_put_or_delete && !$id,
+                'message' => 'id is required'
             ],
             [
                 'code' => 501,
-                'result' => $foreign && !$foreign_exists,
-                'message' => "table '{$foreign}' doesn't implemented"
+                'result' => $request->foreign && !isset($foreign->references->{$request->table}),
+                'message' => "table '{$request->foreign}' referenced doesn't implemented"
             ]
         ];
 
@@ -78,8 +70,10 @@ class Validator
 
     public function validate_request_data()
     {
+        $table = $this->schema->table;
         $request = $this->request;
         $method = $request->method;
+
         $is_post_or_put = in_array($method, ['POST', 'PUT']);
 
         if (!$is_post_or_put) {
@@ -87,7 +81,6 @@ class Validator
         }
 
         $data = $request->get_data();
-        $table = $this->schema->get_request_table();
         $unknown_data_col = $request->has_unknown_data_column($data, $table->columns_all);
 
         $tests = [
