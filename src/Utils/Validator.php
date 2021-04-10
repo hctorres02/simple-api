@@ -2,19 +2,18 @@
 
 namespace HCTorres02\SimpleAPI\Utils;
 
-use HCTorres02\SimpleAPI\Http\Request;
 use HCTorres02\SimpleAPI\Storage\Schema;
 
 class Validator
 {
+    public $response;
+
     private $request;
     private $schema;
 
-    public $response;
-
-    public function __construct(Request $request, Schema $schema)
+    public function __construct(Schema $schema)
     {
-        $this->request = $request;
+        $this->request = $schema->request;
         $this->schema = $schema;
     }
 
@@ -46,9 +45,9 @@ class Validator
         $method = $request->method;
 
         $is_put_or_delete = in_array($method, ['PUT', 'DELETE']);
+        $id_is_invalid = ($foreign && !$id) || ($id && !ctype_digit($id));
         $table_exists = in_array($table, $tables);
         $foreign_exists = in_array($foreign, $references);
-        $id_is_invalid = ($foreign && !$id) || ($id && !ctype_digit($id));
 
         $tests = [
             [
@@ -79,12 +78,16 @@ class Validator
 
     public function validate_request_data()
     {
-        $table = $this->schema->get_request_table();
         $request = $this->request;
         $method = $request->method;
-        $data = $request->get_data();
-
         $is_post_or_put = in_array($method, ['POST', 'PUT']);
+
+        if (!$is_post_or_put) {
+            return true;
+        }
+
+        $data = $request->get_data();
+        $table = $this->schema->get_request_table();
         $unknown_data_col = $request->has_unknown_data_column($data, $table->columns_all);
 
         $tests = [

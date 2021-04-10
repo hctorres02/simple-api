@@ -11,8 +11,8 @@ class Schema
     public const SCHEMA = 'schema';
     public const SCHEMA_REFERENCES = 'schema_references';
 
-    private $db;
-    private $request;
+    public $db;
+    public $request;
 
     public function __construct(Database $db, Request $request)
     {
@@ -123,8 +123,12 @@ class Schema
         return $references;
     }
 
-    public static function get(string $table, bool $only_keys = false)
+    public static function get(?string $table, bool $only_keys = false)
     {
+        if (!$table) {
+            return null;
+        }
+
         if ($only_keys) {
             $schema = self::get($table);
             return array_keys($schema ?? []);

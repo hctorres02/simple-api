@@ -3,6 +3,7 @@
 use HCTorres02\SimpleAPI\Http\Controller;
 use HCTorres02\SimpleAPI\Http\Request;
 use HCTorres02\SimpleAPI\Http\Response;
+use HCTorres02\SimpleAPI\Model\Model;
 use HCTorres02\SimpleAPI\Storage\Database;
 use HCTorres02\SimpleAPI\Storage\Schema;
 use HCTorres02\SimpleAPI\Utils\Validator;
@@ -18,25 +19,24 @@ header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 try {
-    $db = new Database;
-    $request = new Request;
+    $db = new Database();
+    $request = new Request();
     $schema = new Schema($db, $request);
 
     if (!$schema->get_tables()) {
         $schema->build();
     }
 
-    $validator = new Validator($request, $schema);
+    $validator = new Validator($schema);
     $request_fail = !$validator->validate_request();
-    $invalid_data = in_array($request->method, ['POST', 'PUT'])
-        && !$validator->validate_request_data();
+    $invalid_data = !$validator->validate_request_data();
 
     if ($request_fail || $invalid_data) {
         Response::body($validator->response);
     }
 
-    $controller = new Controller($db, $schema);
-    $response = $controller->get_response($request);
+    $model = new Model($schema);
+    $response = Controller::get_response($request, $model);
 
     Response::body($response);
 } catch (PDOException $e) {
