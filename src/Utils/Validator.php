@@ -72,31 +72,29 @@ class Validator
     {
         $table = $this->schema->table;
         $request = $this->request;
-        $method = $request->method;
 
-        $is_post_or_put = in_array($method, ['POST', 'PUT']);
+        $is_post_or_put = in_array($request->method, ['POST', 'PUT']);
 
         if (!$is_post_or_put) {
             return true;
         }
 
-        $data = $request->get_data();
-        $unknown_data_col = $request->has_unknown_data_column($data, $table->columns_all);
+        $unknown_data_col = $request->has_unknown_data_column($table->columns_all);
 
         $tests = [
             [
                 'code' => 501,
-                'result' => isset($data[0]),
+                'result' => isset($request->data[0]),
                 'message' => 'create|update data from array doesn\'t implemented'
             ],
             [
                 'code' => 422,
-                'result' => $is_post_or_put && !$data,
+                'result' => $is_post_or_put && !$request->data,
                 'message' => 'data is required'
             ],
             [
                 'code' => 422,
-                'result' => $data && $unknown_data_col,
+                'result' => $request->data && $unknown_data_col,
                 'message' => "column '{$unknown_data_col}' doesn't exists!"
             ]
 

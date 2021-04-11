@@ -8,18 +8,24 @@ class Request
     public $table;
     public $foreign;
     public $method;
+    public $data;
 
     public function __construct(string $qs = null, string $method = null)
     {
         $endpoint = $this->fill_endpoint($qs);
+        $method = $method ?? filter_input(INPUT_SERVER, 'REQUEST_METHOD');
 
         $this->id = $endpoint->id;
         $this->table = $endpoint->table;
         $this->foreign = $endpoint->foreign;
-        $this->method = $method ?? filter_input(INPUT_SERVER, 'REQUEST_METHOD');
+        $this->method = $method;
+
+        if (in_array($method, ['POST', 'PUT'])) {
+            $this->data = $this->get_data();
+        }
     }
 
-    public function get_data(): ?array
+    private function get_data(): ?array
     {
         $input = file_get_contents('php://input');
         $data = json_decode($input, true);
@@ -46,25 +52,15 @@ class Request
 
         return (object) $endpoint;
     }
-    private static function check_column(string $column, array $table)
-    {
-        if (!in_array($column, $table)) {
-            return $column;
-        }
 
-        return false;
-    }
-
-    public function has_unknown_data_column(array $data, array $table)
+    public function has_unknown_data_column(array $columns): ?string
     {
-        foreach ($data as $row => $value) {
-            if (is_array($value)) {
-                foreach (array_keys($value) as $col) {
-                    return self::check_column($col, $table);
-                }
+        foreach (array_keys($this->data) as $column) {
+            if (!in_array($column, $columns)) {
+                return $column;
             }
-
-            return self::check_column($row, $table);
         }
+
+        return null;
     }
 }

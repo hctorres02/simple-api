@@ -20,7 +20,7 @@ class Model
         $this->id = $schema->request->id;
         $this->table = $schema->table;
         $this->foreign = $schema->foreign;
-        $this->data = $schema->request->get_data();
+        $this->data = $schema->request->data;
     }
 
     public function select(): ?array
