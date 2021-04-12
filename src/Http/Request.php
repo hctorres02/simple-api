@@ -10,17 +10,14 @@ class Request
     public $method;
     public $data;
 
-    public function __construct(string $qs = null, string $method = null)
+    public function __construct()
     {
-        $endpoint = $this->fill_endpoint($qs);
-        $method = $method ?? filter_input(INPUT_SERVER, 'REQUEST_METHOD');
+        $this->id = filter_input(INPUT_GET, 'id');
+        $this->table = filter_input(INPUT_GET, 'table');
+        $this->foreign = filter_input(INPUT_GET, 'foreach');
+        $this->method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
 
-        $this->id = $endpoint->id;
-        $this->table = $endpoint->table;
-        $this->foreign = $endpoint->foreign;
-        $this->method = $method;
-
-        if (in_array($method, ['POST', 'PUT'])) {
+        if (in_array($this->method, ['POST', 'PUT'])) {
             $this->data = $this->get_data();
         }
     }
@@ -31,26 +28,6 @@ class Request
         $data = json_decode($input, true);
 
         return $data ?? [];
-    }
-
-    private function fill_endpoint(?string $qs): object
-    {
-        $qs = $qs ?? filter_input(INPUT_GET, 'endpoint');
-
-        $parts = explode('/', $qs);
-        $count_parts = count($parts);
-
-        $keys = ['table', 'id', 'foreign'];
-        $count_keys = count($keys);
-        $placeholder = array_fill(0, $count_keys, null);
-
-        for ($i = 0; $i < $count_parts; $i++) {
-            $placeholder[$i] = $parts[$i];
-        }
-
-        $endpoint = array_combine($keys, $placeholder);
-
-        return (object) $endpoint;
     }
 
     public function has_unknown_data_column(array $columns): ?string
