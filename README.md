@@ -1,9 +1,10 @@
-# Simple-API (v0.7)
+# Simple-API (v0.8)
 _A simple API (serious?)_
 
 ## Roadmap
 - [x] first launch!
 - [x] implements PSR-4
+- [x] implements friendly URLs
 - [ ] live demo
 - [ ] improve DB class
 - - [x] `join`
@@ -41,11 +42,9 @@ users = user
 
 ## Usage
 
-_This version __doesn't__ use `friendly URLs`._
-
-* GET `index.php?table={tb_name}`
-* GET `index.php?table={tb_name}&id={id}`
-* GET `index.php?table={tb_name}&id={id}&join={tb_name}`
+* GET `/{tb_name}`
+* GET `/{tb_name}/{id}`
+* GET `/{tb_name}/{id}/{join_name}`
 
 Use HTTP verbs to `create`, `update` or `delete`.
 
