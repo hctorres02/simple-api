@@ -14,7 +14,7 @@ class Request
     {
         $this->id = filter_input(INPUT_GET, 'id');
         $this->table = filter_input(INPUT_GET, 'table');
-        $this->foreign = filter_input(INPUT_GET, 'foreach');
+        $this->foreign = filter_input(INPUT_GET, 'join');
         $this->method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
 
         if (in_array($this->method, ['POST', 'PUT'])) {

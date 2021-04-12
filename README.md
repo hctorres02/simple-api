@@ -1,4 +1,4 @@
-# Simple-API (v0.6)
+# Simple-API (v0.7)
 _A simple API (serious?)_
 
 ## Roadmap
@@ -12,9 +12,9 @@ _A simple API (serious?)_
 - - [ ] `offset/limit` _(a.k.a. pagination)_
 - - [ ] `order by` 
 
-## Configuration:
+## Configuration
 
-Update `.env` file with your database infos:
+##### Update `.env` file with your database infos:
 ```
 host = localhost
 dbname = simple-api
@@ -24,13 +24,13 @@ pass =
 
 > Simple API will read this information from the informed database using `information_schema.columns`. The database schema will be stored at server session, using `PHP SESSIONS`.
 
-Hide sensitive columns:
+##### Hide sensitive columns:
 ```
 [excluded]
 0=password
 ```
 
-Bind columns aliases (JOIN) | _(a.k.a. singular)_
+##### Bind columns aliases (JOIN) | _(a.k.a. singular)_
 ```
 [aliases]
 posts = post
@@ -43,11 +43,10 @@ users = user
 
 _This version __doesn't__ use `friendly URLs`._
 
-* GET `index.php?endpoint={host_table}`
-* GET `index.php?endpoint={host_table}/{id}`
-* GET `index.php?endpoint={host_table}/{id}/{foreign_table}`
+* GET `index.php?table={tb_name}`
+* GET `index.php?table={tb_name}&id={id}`
+* GET `index.php?table={tb_name}&id={id}&join={tb_name}`
 
 Use HTTP verbs to `create`, `update` or `delete`.
 
-Currently, HTTP verbs allowed are: `GET`, `POST`, `PUT`, `DELETE`.
-Others verbs results in `status 409`.
+Currently, HTTP verbs allowed are: `GET`, `POST`, `PUT`, `DELETE`. Others verbs results in `status 405`.
