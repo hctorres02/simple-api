@@ -10,16 +10,38 @@ class Request
     public $method;
     public $data;
 
-    public function __construct()
+    public function __construct(?string $qs = null)
     {
-        $this->id = filter_input(INPUT_GET, 'id');
-        $this->table = filter_input(INPUT_GET, 'table');
-        $this->foreign = filter_input(INPUT_GET, 'join');
+        $endpoint = $this->get_endpoint($qs);
+
+        $this->id = $endpoint->id;
+        $this->table = $endpoint->table;
+        $this->foreign = $endpoint->foreign;
         $this->method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
 
         if (in_array($this->method, ['POST', 'PUT'])) {
             $this->data = $this->get_data();
         }
+    }
+
+    private function get_endpoint(?string $qs): object
+    {
+        $qs = $qs ?? filter_input(INPUT_GET, 'endpoint');
+
+        $parts = explode('/', $qs);
+        $count_parts = count($parts);
+
+        $keys = ['table', 'id', 'foreign'];
+        $count_keys = count($keys);
+        $placeholder = array_fill(0, $count_keys, null);
+
+        for ($i = 0; $i < $count_parts; $i++) {
+            $placeholder[$i] = $parts[$i];
+        }
+
+        $endpoint = array_combine($keys, $placeholder);
+
+        return (object) $endpoint;
     }
 
     private function get_data(): ?array
