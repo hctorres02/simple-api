@@ -3,4 +3,4 @@ RewriteEngine On
 RewriteCond %{SCRIPT_FILENAME} !-d
 RewriteCond %{SCRIPT_FILENAME} !-f
 
-RewriteRule ^(.*)$ index.php?endpoint=$1 [NC,L]
+RewriteRule ^(.*)$ index.php?endpoint=$1 [QSA,NC,L]
