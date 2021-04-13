@@ -1,4 +1,4 @@
-# Simple-API (v0.8)
+# Simple-API (v0.9)
 _A simple API (serious?)_
 
 ## Roadmap
@@ -9,7 +9,7 @@ _A simple API (serious?)_
 - [ ] improve DB class
 - - [x] `join`
 - - [ ] `like` *(a.k.a. dataset filter)*
-- - [ ] `columns selection`
+- - [x] `columns selection`
 - - [ ] `offset/limit` _(a.k.a. pagination)_
 - - [ ] `order by` 
 
@@ -28,7 +28,7 @@ pass =
 ##### Hide sensitive columns:
 ```
 [excluded]
-0=password
+0 = password
 ```
 
 ##### Bind columns aliases (JOIN) | _(a.k.a. singular)_
@@ -48,4 +48,8 @@ users = user
 
 Use HTTP verbs to `create`, `update` or `delete`.
 
-Currently, HTTP verbs allowed are: `GET`, `POST`, `PUT`, `DELETE`. Others verbs results in `status 405`.
+> Currently, HTTP verbs allowed are: `GET`, `POST`, `PUT`, `DELETE`. Others verbs results in `status 405`.
+
+##### Columns selection
+* GET `/{tb_name}?columns=id,name`
+* GET `/{tb_name}/{id}?columns=id,name,email`
