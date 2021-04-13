@@ -17,6 +17,15 @@ class Validator
         $this->schema = $schema;
     }
 
+    public function fails(): bool
+    {
+        $request_fails = !$this->validate_request();
+        $has_restict_column = !$this->validate_request_columns();
+        $invalid_data = !$this->validate_request_data();
+
+        return ($request_fails || $invalid_data || $has_restict_column);
+    }
+
     private function tester(array $tests)
     {
         foreach ($tests as $test) {
