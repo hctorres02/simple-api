@@ -26,8 +26,9 @@ try {
 
     $request_fail = !$validator->validate_request();
     $invalid_data = !$validator->validate_request_data();
+    $has_restict_column = !$validator->validate_request_columns();
 
-    if ($request_fail || $invalid_data) {
+    if ($request_fail || $invalid_data || $has_restict_column) {
         Response::body($validator->response);
     }
 

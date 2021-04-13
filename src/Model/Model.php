@@ -21,11 +21,13 @@ class Model
         $this->table = $schema->table;
         $this->foreign = $schema->foreign;
         $this->data = $schema->request->data;
+
+        $this->columns = $schema->request->columns ?? $schema->table->columns;
     }
 
     public function select(): ?array
     {
-        $query = Query::select($this->table->columns)
+        $query = Query::select($this->columns)
             ->from($this->table->name);
 
         if ($this->foreign) {

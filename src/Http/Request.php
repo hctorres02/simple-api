@@ -22,6 +22,8 @@ class Request
         if (in_array($this->method, ['POST', 'PUT'])) {
             $this->data = $this->get_data();
         }
+
+        $this->columns = explode(',', filter_input(INPUT_GET, 'columns'));
     }
 
     private function get_endpoint(?string $qs): object
@@ -56,6 +58,17 @@ class Request
     {
         foreach (array_keys($this->data) as $column) {
             if (!in_array($column, $columns)) {
+                return $column;
+            }
+        }
+
+        return null;
+    }
+
+    public function has_restrict_column(array $excluded): ?string
+    {
+        foreach ($this->columns as $column) {
+            if (in_array($column, $excluded)) {
                 return $column;
             }
         }

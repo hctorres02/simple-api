@@ -102,4 +102,19 @@ class Validator
 
         return $this->tester($tests);
     }
+
+    public function validate_request_columns()
+    {
+        $request = $this->request;
+        $restrict_column = $request->has_restrict_column($this->schema->db->excluded);
+
+        $tests = [
+            [
+                'result' => $restrict_column,
+                'message' => "column '{$restrict_column}' isn't public"
+            ]
+        ];
+
+        return $this->tester($tests);
+    }
 }
