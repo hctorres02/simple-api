@@ -9,6 +9,7 @@ class Request
     public $foreign;
     public $method;
     public $data;
+    public $columns;
 
     public function __construct(?string $qs = null)
     {
@@ -23,7 +24,9 @@ class Request
             $this->data = $this->get_data();
         }
 
-        $this->columns = explode(',', filter_input(INPUT_GET, 'columns'));
+        if ($this->method == 'GET') {
+            $this->columns = filter_input(INPUT_GET, 'columns');
+        }
     }
 
     private function get_endpoint(?string $qs): object
@@ -56,7 +59,9 @@ class Request
 
     public function has_unknown_data_column(array $columns): ?string
     {
-        foreach (array_keys($this->data) as $column) {
+        $data = array_keys($this->data);
+
+        foreach ($data as $column) {
             if (!in_array($column, $columns)) {
                 return $column;
             }
@@ -67,7 +72,9 @@ class Request
 
     public function has_restrict_column(array $excluded): ?string
     {
-        foreach ($this->columns as $column) {
+        $columns = explode(',', $this->columns);
+
+        foreach ($columns as $column) {
             if (in_array($column, $excluded)) {
                 return $column;
             }

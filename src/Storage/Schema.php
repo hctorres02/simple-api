@@ -2,7 +2,6 @@
 
 namespace HCTorres02\SimpleAPI\Storage;
 
-use HCTorres02\SimpleAPI\Http\Request;
 use HCTorres02\SimpleAPI\Storage\Database;
 
 class Schema
@@ -11,26 +10,18 @@ class Schema
     public const SCHEMA = 'schema';
     public const SCHEMA_REFERENCES = 'schema_references';
 
-    public $db;
-    public $request;
+    private $db;
 
-    public $table;
-    public $foreign;
-
-    public function __construct(Database $db, Request $request)
+    public function __construct(Database $db)
     {
         $this->db = $db;
-        $this->request = $request;
 
-        if ($this->get_schema(self::ALL)) {
+        if (!$this->get_schema(self::ALL)) {
             $this->build();
         }
-
-        $this->table = $this->get_schema($request->table);
-        $this->foreign = $this->get_schema($request->foreign);
     }
 
-    private function get_schema(?string $table): ?object
+    public function get_schema(?string $table): ?object
     {
         if (!$table) {
             return null;
@@ -49,7 +40,7 @@ class Schema
         return $schema_dec;
     }
 
-    public function build(): void
+    private function build(): void
     {
         $tables = $this->build_tables();
         $references = $this->build_references();

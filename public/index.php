@@ -21,14 +21,14 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 try {
     $db = new Database();
     $request = new Request();
-    $schema = new Schema($db, $request);
-    $validator = new Validator($schema);
+    $schema = new Schema($db);
+    $model = new Model($db, $request, $schema);
+    $validator = new Validator($request, $model);
 
     if ($validator->fails()) {
         Response::body($validator->response);
     }
 
-    $model = new Model($schema);
     $response = Controller::get_response($request, $model);
 
     Response::body($response);

@@ -2,19 +2,20 @@
 
 namespace HCTorres02\SimpleAPI\Utils;
 
-use HCTorres02\SimpleAPI\Storage\Schema;
+use HCTorres02\SimpleAPI\Http\Request;
+use HCTorres02\SimpleAPI\Model\Model;
 
 class Validator
 {
     public $response;
 
     private $request;
-    private $schema;
+    private $model;
 
-    public function __construct(Schema $schema)
+    public function __construct(Request $request, Model $model)
     {
-        $this->request = $schema->request;
-        $this->schema = $schema;
+        $this->request = $request;
+        $this->model = $model;
     }
 
     public function fails(): bool
@@ -48,8 +49,8 @@ class Validator
         $method = $request->method;
         $id = $request->id;
 
-        $table = $this->schema->table;
-        $foreign = $this->schema->foreign;
+        $table = $this->model->table;
+        $foreign = $this->model->foreign;
 
         $is_invalid_id = ($request->foreign && !$id) || ($id && !ctype_digit($id));
         $is_put_or_delete = in_array($method, ['PUT', 'DELETE']);
@@ -79,7 +80,7 @@ class Validator
 
     public function validate_request_data()
     {
-        $table = $this->schema->table;
+        $table = $this->model->table;
         $request = $this->request;
 
         $is_post_or_put = in_array($request->method, ['POST', 'PUT']);
@@ -115,7 +116,7 @@ class Validator
     public function validate_request_columns()
     {
         $request = $this->request;
-        $restrict_column = $request->has_restrict_column($this->schema->db->excluded);
+        $restrict_column = $request->has_restrict_column($this->model->db->excluded);
 
         $tests = [
             [

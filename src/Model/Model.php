@@ -2,37 +2,44 @@
 
 namespace HCTorres02\SimpleAPI\Model;
 
+use HCTorres02\SimpleAPI\Http\Request;
+use HCTorres02\SimpleAPI\Storage\Database;
 use HCTorres02\SimpleAPI\Storage\Query;
 use HCTorres02\SimpleAPI\Storage\Schema;
 
 class Model
 {
-    private $db;
-
+    public $db;
     public $id;
     public $table;
     public $foreign;
 
-    public function __construct(Schema $schema)
+    private $columns;
+
+    public function __construct(Database $db, Request $request, Schema $schema)
     {
-        $this->db = $schema->db;
+        $this->db = $db;
+        $this->id = $request->id;
+        $this->table = $schema->get_schema($request->table);
+        $this->foreign = $schema->get_schema($request->foreign);
 
-        $this->id = $schema->request->id;
-        $this->table = $schema->table;
-        $this->foreign = $schema->foreign;
-        $this->data = $schema->request->data;
-
-        $this->columns = $schema->request->columns ?? $schema->table->columns;
+        if ($request->columns) {
+            $this->columns = explode(',', $request->columns);
+        }
     }
 
     public function select(): ?array
     {
-        $query = Query::select($this->columns)
+        $columns = $this->columns ?? $this->table->columns;
+        $query = Query::select($columns)
             ->from($this->table->name);
 
         if ($this->foreign) {
-            $query->add_columns($this->foreign->columns)
-                ->join($this->foreign->name)
+            if (!$this->columns) {
+                $query->add_columns($this->foreign->columns);
+            }
+
+            $query->join($this->foreign->name)
                 ->on($this->foreign->references->{$this->table->name});
         }
 
