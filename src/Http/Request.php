@@ -82,11 +82,10 @@ class Request
             $dot = strrpos($column, '.');
             $space = strrpos($column, ' ');
 
-            $column = $dot > 0
-                ? substr($column, $dot + 1)
-                : $column;
+            $column = $dot > 0 ? substr($column, $dot + 1) : $column;
+            $column = trim($column);
 
-            if ($space > 0) {
+            if ($space > 0 || $column == '*') {
                 return $column;
             }
 
