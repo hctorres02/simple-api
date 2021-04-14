@@ -72,9 +72,24 @@ class Request
 
     public function has_restrict_column(array $excluded): ?string
     {
-        $columns = explode(',', $this->columns);
+        $columns = $this->columns;
+
+        if (!is_array($columns)) {
+            $columns = explode(',', $columns);
+        }
 
         foreach ($columns as $column) {
+            $dot = strrpos($column, '.');
+            $space = strrpos($column, ' ');
+
+            $column = $dot > 0
+                ? substr($column, $dot + 1)
+                : $column;
+
+            if ($space > 0) {
+                return $column;
+            }
+
             if (in_array($column, $excluded)) {
                 return $column;
             }
