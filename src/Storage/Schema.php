@@ -30,7 +30,7 @@ class Schema
         $schemas = $_SESSION[self::SCHEMA] ?? null;
 
         if (self::ALL == $table) {
-            return (object) $schemas;
+            return !empty($schemas) ? (object) $schemas : null;
         }
 
         $schema = $schemas[$table] ?? null;
