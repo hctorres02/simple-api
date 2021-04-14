@@ -15,6 +15,7 @@ class Model
     public $foreign;
 
     private $columns;
+    private $order_by;
 
     public function __construct(Database $db, Request $request, Schema $schema)
     {
@@ -26,6 +27,8 @@ class Model
         if ($request->columns) {
             $this->columns = explode(',', $request->columns);
         }
+
+        $this->order_by = $request->order_by ?? "{$this->table->name}.id";
     }
 
     public function select(): ?array
@@ -47,7 +50,7 @@ class Model
             $query->where_id($this->id);
         }
 
-        $query->order_by("{$this->table->name}.id");
+        $query->order_by($this->order_by);
         $data = $this->db->select($query);
 
         return $data;

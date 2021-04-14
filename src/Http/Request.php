@@ -10,6 +10,7 @@ class Request
     public $method;
     public $data;
     public $columns;
+    public $order_by;
 
     public function __construct(?string $qs = null)
     {
@@ -25,7 +26,14 @@ class Request
         }
 
         if ($this->method == 'GET') {
-            $this->columns = filter_input(INPUT_GET, 'columns');
+            $params = filter_input_array(INPUT_GET, [
+                'columns' => FILTER_DEFAULT,
+                'order_by' => FILTER_DEFAULT
+            ]);
+
+            foreach ($params as $key => $value) {
+                $this->{$key} = $value;
+            }
         }
     }
 

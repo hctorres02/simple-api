@@ -117,11 +117,16 @@ class Validator
     {
         $request = $this->request;
         $restrict_column = $request->has_restrict_column($this->model->db->excluded);
+        $has_invalid_chars = !preg_match('/^[a-z0-9\.\_\,]+$/i', $request->order_by);
 
         $tests = [
             [
                 'result' => $restrict_column,
                 'message' => "column '{$restrict_column}' isn't public"
+            ],
+            [
+                'result' => $has_invalid_chars,
+                'message' => "{$request->order_by} argument has invalids chars"
             ]
         ];
 
