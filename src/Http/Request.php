@@ -27,7 +27,10 @@ class Request
 
         if ($this->method == 'GET') {
             $params = filter_input_array(INPUT_GET, [
-                'columns' => FILTER_DEFAULT,
+                'columns' => [
+                    'filter' => FILTER_DEFAULT,
+                    'flags' => FILTER_FORCE_ARRAY
+                ],
                 'order_by' => FILTER_DEFAULT
             ]);
 

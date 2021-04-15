@@ -125,7 +125,7 @@ class Validator
                 'message' => "column '{$restrict_column}' isn't public"
             ],
             [
-                'result' => $has_invalid_chars,
+                'result' => !empty($request->order_by) && $has_invalid_chars,
                 'message' => "{$request->order_by} argument has invalids chars"
             ]
         ];

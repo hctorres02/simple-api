@@ -24,21 +24,46 @@ class Model
         $this->table = $schema->get_schema($request->table);
         $this->foreign = $schema->get_schema($request->foreign);
 
-        if ($request->columns) {
-            $this->columns = explode(',', $request->columns);
+        $this->columns = $request->columns;
+        $this->order_by = $request->order_by;
+    }
+
+    private function get_columns()
+    {
+        if (!empty($this->columns)) {
+            foreach ($this->columns as $key => $value) {
+                $o = explode(',', $value);
+
+                foreach ($o as $v) {
+                    if (!is_numeric($key)) {
+                        $v = "{$key}.{$v}";
+                    }
+
+                    $columns[] = $v;
+                }
+            }
+
+            return $columns;
         }
 
-        $this->order_by = $request->order_by ?? "{$this->table->name}.id";
+        return $this->table->columns;
+    }
+
+    private function get_order()
+    {
+        return $this->order_by ?? "{$this->table->name}.id";
     }
 
     public function select(): ?array
     {
-        $columns = $this->columns ?? $this->table->columns;
+        $columns = $this->get_columns();
+        $order = $this->get_order();
+
         $query = Query::select($columns)
             ->from($this->table->name);
 
         if ($this->foreign) {
-            if (!$this->columns) {
+            if (empty($this->columns)) {
                 $query->add_columns($this->foreign->columns);
             }
 
@@ -46,11 +71,11 @@ class Model
                 ->on($this->foreign->references->{$this->table->name});
         }
 
-        if ($this->id) {
+        if (!empty($this->id)) {
             $query->where_id($this->id);
         }
 
-        $query->order_by($this->order_by);
+        $query->order_by($order);
         $data = $this->db->select($query);
 
         return $data;
