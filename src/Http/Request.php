@@ -2,6 +2,8 @@
 
 namespace HCTorres02\SimpleAPI\Http;
 
+use stdClass;
+
 class Request
 {
     public $id;
@@ -40,7 +42,7 @@ class Request
         }
     }
 
-    private function get_endpoint(?string $qs): object
+    private function get_endpoint(?string $qs): stdClass
     {
         $qs = $qs ?? filter_input(INPUT_GET, 'endpoint');
 

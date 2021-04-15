@@ -3,6 +3,7 @@
 namespace HCTorres02\SimpleAPI\Storage;
 
 use HCTorres02\SimpleAPI\Storage\Database;
+use stdClass;
 
 class Schema
 {
@@ -21,7 +22,7 @@ class Schema
         }
     }
 
-    public function get_schema(?string $table): ?object
+    public function get_schema(?string $table): ?stdClass
     {
         if (!$table) {
             return null;
