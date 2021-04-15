@@ -10,6 +10,7 @@ use HCTorres02\SimpleAPI\Utils\Validator;
 
 require realpath(__DIR__ . '/../src/App.php');
 
+session_name('simple_api');
 session_start();
 
 header("Access-Control-Allow-Origin: *");
