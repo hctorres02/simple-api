@@ -1,17 +1,23 @@
 # Simple-API (v0.9)
-_A simple API (serious?)_
+Build automatically an API for your database, without the need to configure models, routes and other things that are requested.
 
 ## Roadmap
 - [x] first launch!
 - [x] implements PSR-4
-- [x] implements friendly URLs
-- [ ] live demo
+- [ ] implements friendly URLs
+  - [x]  Apache
+  - [x] IIS
+  - [ ] Nginx
+- [x] live demo
 - [ ] improve DB class
-- - [x] `join`
-- - [ ] `like` *(a.k.a. dataset filter)*
-- - [x] `columns selection`
-- - [ ] `offset/limit` _(a.k.a. pagination)_
-- - [ ] `order by` 
+  - [x] `join`
+  - [x] `columns selection`
+  - [x] `order by` 
+  - [ ] `like` _(a.k.a. dataset filter)_
+  - [ ] `offset/limit` _(a.k.a. pagination)_
+
+## Live demo
+[Run live demo](#usage)
 
 ## Configuration
 
@@ -42,14 +48,29 @@ users = user
 
 ## Usage
 
-* GET `/{tb_name}`
-* GET `/{tb_name}/{id}`
-* GET `/{tb_name}/{id}/{join_name}`
+##### single table
+- GET [`/{tb_name}`](https://hctorres02.gear.host/simple-api/users)
+
+##### single table with id
+- GET [`/{tb_name}/{id}`](https://hctorres02.gear.host/simple-api/users/1)
+
+##### join tables with id
+- GET [`/{tb_name}/{id}/{join_tb_name}`](https://hctorres02.gear.host/simple-api/users/1/posts)
 
 Use HTTP verbs to `create`, `update` or `delete`.
 
 > Currently, HTTP verbs allowed are: `GET`, `POST`, `PUT`, `DELETE`. Others verbs results in `status 405`.
 
-##### Columns selection
-* GET `/{tb_name}?columns=id,name`
-* GET `/{tb_name}/{id}?columns=id,name,email`
+### Columns selection (comma separated)
+##### single table
+- GET [`/{tb_name}?columns={columns}`](https://hctorres02.gear.host/simple-api/users?columns=id,name)
+
+##### single table with id
+- GET [`/{tb_name}/{id}?columns={columns}`](https://hctorres02.gear.host/simple-api/users/1/?columns=id,name,email)
+
+##### multi tables with id
+- ###### array style (recomended)
+  GET [`/{tb_name}/{id}/{join_tb_name}?columns[{tb_name}]={columns}&columns[{tb_name}]={columns}`](https://hctorres02.gear.host/simple-api/users/1/posts?columns[users]=id,name,email&columns[posts]=title,body)	
+
+- ###### comma style
+  GET [`/{tb_name}/{id}/{join_tb_name}?columns={tb_name}.{column_name}`](https://hctorres02.gear.host/simple-api/users/1/posts?columns=users.id,users.name,users.email,posts.title,posts.body)
