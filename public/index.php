@@ -10,15 +10,6 @@ use HCTorres02\SimpleAPI\Utils\Validator;
 
 require realpath(__DIR__ . '/../src/App.php');
 
-session_name('simple_api');
-session_start();
-
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: OPTIONS, GET, POST, PUT, DELETE");
-header("Access-Control-Max-Age: 86400");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
-
 try {
     $db = new Database();
     $request = new Request();
