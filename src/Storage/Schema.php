@@ -47,23 +47,13 @@ class Schema
         $references = $this->build_references();
 
         foreach ($tables as $table => $columns) {
-            $alias = $this->db->aliases[$table] ?? null;
-            $excluded = $this->db->excluded ?? [];
-
-            $cols_fd = array_values(array_diff($columns, $excluded));
-            $cols_fd_ad = self::apply_alias($alias, $table, $cols_fd);
-            $refs = $references[$table] ?? [];
-
             $schema[$table] = [
                 'name' => $table,
-                'columns' => $cols_fd_ad,
-                'columns_filtered' => $cols_fd,
-                'columns_all' => $columns,
-                'references' => $refs
+                'columns' => $columns,
+                'references' => $references[$table] ?? []
             ];
         }
 
-        $_SESSION[self::SCHEMA_REFERENCES] = $references;
         $_SESSION[self::SCHEMA] = $schema;
     }
 

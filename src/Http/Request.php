@@ -10,9 +10,9 @@ class Request
     public $table;
     public $foreign;
     public $method;
-    public $data;
-    public $columns;
-    public $order_by;
+
+    private $columns;
+    private $order_by;
 
     public function __construct(?string $qs = null)
     {
@@ -22,10 +22,6 @@ class Request
         $this->table = $endpoint->table;
         $this->foreign = $endpoint->foreign;
         $this->method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
-
-        if (in_array($this->method, ['POST', 'PUT'])) {
-            $this->data = $this->get_data();
-        }
 
         if ($this->method == 'GET') {
             $params = filter_input_array(INPUT_GET, [
@@ -37,9 +33,39 @@ class Request
             ]);
 
             foreach ($params as $key => $value) {
+                if (is_array($value) && empty($value[0])) {
+                    continue;
+                }
+
                 $this->{$key} = $value;
             }
         }
+    }
+
+    public function get_columns(): ?array
+    {
+        if (empty($this->columns)) {
+            return null;
+        }
+
+        foreach ($this->columns as $key => $value) {
+            $k = explode(',', $value);
+
+            foreach ($k as $v) {
+                if (!is_numeric($key)) {
+                    $v = "{$key}.{$v}";
+                }
+
+                $columns[] = $v;
+            }
+        }
+
+        return $columns;
+    }
+
+    public function get_order_by(): ?string
+    {
+        return $this->order_by;
     }
 
     private function get_endpoint(?string $qs): stdClass
@@ -62,7 +88,7 @@ class Request
         return (object) $endpoint;
     }
 
-    private function get_data(): ?array
+    public function get_data(): ?array
     {
         $input = file_get_contents('php://input');
         $data = json_decode($input, true);
@@ -72,38 +98,11 @@ class Request
 
     public function has_unknown_data_column(array $columns): ?string
     {
-        $data = array_keys($this->data);
+        $data = array_keys($this->get_data());
 
         foreach ($data as $column) {
             if (!in_array($column, $columns)) {
-                return $column;
-            }
-        }
-
-        return null;
-    }
-
-    public function has_restrict_column(array $excluded): ?string
-    {
-        $columns = $this->columns;
-
-        if (!is_array($columns)) {
-            $columns = explode(',', $columns);
-        }
-
-        foreach ($columns as $column) {
-            $dot = strrpos($column, '.');
-            $space = strrpos($column, ' ');
-
-            $column = $dot > 0 ? substr($column, $dot + 1) : $column;
-            $column = trim($column);
-
-            if ($space > 0 || $column == '*') {
-                return $column;
-            }
-
-            if (in_array($column, $excluded)) {
-                return $column;
+                return true;
             }
         }
 

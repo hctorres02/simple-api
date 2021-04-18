@@ -15,7 +15,7 @@ class Controller
                 if ($model->id && !$data) {
                     return [
                         'code' => 404,
-                        'data' => "{$model->table->name} {$model->id} doesn't exists!"
+                        'data' => "{$model->table->name} {$model->id} doesn't exist"
                     ];
                 }
 
@@ -69,7 +69,7 @@ class Controller
             default:
                 return [
                     'code' => 405,
-                    'data' => 'method not allowed'
+                    'data' => 'Method not allowed'
                 ];
                 break;
         }

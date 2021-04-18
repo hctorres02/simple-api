@@ -14,50 +14,69 @@ class Model
     public $table;
     public $foreign;
 
-    private $columns;
-    private $order_by;
+    private $request;
 
-    public function __construct(Database $db, Request $request, Schema $schema)
+    public function __construct(Database $db, Request $request, Schema $schemas)
     {
         $this->db = $db;
         $this->id = $request->id;
-        $this->table = $schema->get_schema($request->table);
-        $this->foreign = $schema->get_schema($request->foreign);
-
-        $this->columns = $request->columns;
-        $this->order_by = $request->order_by;
+        $this->table = $schemas->get_schema($request->table);
+        $this->foreign = $schemas->get_schema($request->foreign);
+        $this->request = $request;
     }
 
-    private function get_columns()
+    private function get_columns(): array
     {
-        if (!empty($this->columns)) {
-            foreach ($this->columns as $key => $value) {
-                $o = explode(',', $value);
+        $request_columns = $this->request->get_columns();
 
-                foreach ($o as $v) {
-                    if (!is_numeric($key)) {
-                        $v = "{$key}.{$v}";
-                    }
-
-                    $columns[] = $v;
-                }
-            }
-
-            return $columns;
+        if ($request_columns) {
+            return $request_columns;
         }
 
-        return $this->table->columns;
+        $table_columns = $this->table->columns;
+        $excluded = $this->db->excluded;
+
+        return array_diff($table_columns, $excluded);
     }
 
-    private function get_order()
+    private function get_order_by()
     {
-        return $this->order_by ?? "{$this->table->name}.id";
+        return $this->request->get_order_by() ?? "{$this->table->name}.id";
+    }
+
+    public function has_restricted_column(): ?string
+    {
+        $columns = $this->request->get_columns();
+        $excluded = $this->db->excluded;
+
+        if (empty($columns)) {
+            return null;
+        }
+
+        foreach ($columns as $column) {
+            $dot = strrpos($column, '.');
+            $space = strrpos($column, ' ');
+
+            if ($dot > 0) {
+                $column = substr($column, $dot + 1);
+            }
+
+            if (
+                $space > 0
+                || $column == '*'
+                || in_array($column, $excluded)
+            ) {
+                return $column;
+            }
+        }
+
+        return null;
     }
 
     public function select(): ?array
     {
         $columns = $this->get_columns();
-        $order = $this->get_order();
+        $order = $this->get_order_by();
 
         $query = Query::select($columns)
             ->from($this->table->name);
@@ -84,7 +103,7 @@ class Model
     public function create()
     {
         $query = Query::insert_into($this->table->name)
-            ->values($this->data);
+            ->values($this->request->get_data());
 
         $this->id = $this->db->insert($query);
         $data = $this->select();
@@ -101,7 +120,7 @@ class Model
         }
 
         $query = Query::update($this->table->name)
-            ->set($this->data)
+            ->set($this->request->get_data())
             ->where_id($this->id);
 
         $this->db->update($query);

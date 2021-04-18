@@ -13,8 +13,8 @@ require realpath(__DIR__ . '/../src/App.php');
 try {
     $db = new Database();
     $request = new Request();
-    $schema = new Schema($db);
-    $model = new Model($db, $request, $schema);
+    $schemas = new Schema($db);
+    $model = new Model($db, $request, $schemas);
     $validator = new Validator($request, $model);
 
     if ($validator->fails()) {

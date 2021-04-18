@@ -20,14 +20,18 @@ class Validator
 
     public function fails(): bool
     {
-        $request_fails = !$this->validate_request();
-        $has_restict_column = !$this->validate_request_columns();
-        $invalid_data = !$this->validate_request_data();
+        $a_tests = $this->validate_request();
+        $b_tests = $this->validate_request_data();
+        $c_tests = $this->validate_model();
 
-        return ($request_fails || $invalid_data || $has_restict_column);
+        $a = $this->execute_tests($a_tests);
+        $b = $this->execute_tests($b_tests);
+        $c = $this->execute_tests($c_tests);
+
+        return ($a || $b || $c);
     }
 
-    private function tester(array $tests)
+    private function execute_tests($tests): bool
     {
         foreach ($tests as $test) {
             if ($test['result']) {
@@ -36,100 +40,72 @@ class Validator
                     'data' => $test['message']
                 ];
 
-                return false;
+                return true;
             }
         }
 
-        return true;
+        return false;
     }
 
-    public function validate_request()
+    private function validate_request(): array
     {
         $request = $this->request;
-        $method = $request->method;
         $id = $request->id;
+        $table = $request->table;
+        $foreign = $request->foreign;
+        $method = $request->method;
 
-        $table = $this->model->table;
-        $foreign = $this->model->foreign;
-
-        $is_invalid_id = ($request->foreign && !$id) || ($id && !ctype_digit($id));
-        $is_put_or_delete = in_array($method, ['PUT', 'DELETE']);
-
-        $tests = [
+        return [
             [
-                'result' => !$table,
-                'message' => 'table is required'
+                'result' => empty($table),
+                'message' => 'Table is required'
             ],
             [
-                'result' => $is_invalid_id,
-                'message' => 'id must be integer and greater than zero'
+                'result' => ($foreign && empty($id)) || ($id && !ctype_digit($id) && (int) $id <= 0),
+                'message' => 'ID must be integer and greater than zero'
             ],
             [
-                'result' => $is_put_or_delete && !$id,
-                'message' => 'id is required'
+                'result' => in_array($method, ['PUT', 'DELETE']) && empty($id),
+                'message' => 'ID is required'
+            ]
+        ];
+    }
+
+    private function validate_model(): array
+    {
+        $request = $this->request;
+        $model = $this->model;
+
+        return [
+            [
+                'code' => 404,
+                'result' => empty($model->table) || ($request->foreign && empty($model->foreign)),
+                'message' => "Request table doesn't exists"
             ],
             [
                 'code' => 501,
-                'result' => $request->foreign && !isset($foreign->references->{$request->table}),
-                'message' => "table '{$request->foreign}' referenced doesn't implemented"
+                'result' => $model->foreign && empty($model->foreign->references->{$request->table}),
+                'message' => "Table doesn't implemented"
+            ],
+            [
+                'code' => 403,
+                'result' => $model->has_restricted_column(),
+                'message' => "Can't access restricted columns"
             ]
         ];
-
-        return $this->tester($tests);
     }
 
-    public function validate_request_data()
-    {
-        $table = $this->model->table;
-        $request = $this->request;
-
-        $is_post_or_put = in_array($request->method, ['POST', 'PUT']);
-
-        if (!$is_post_or_put) {
-            return true;
-        }
-
-        $unknown_data_col = $request->has_unknown_data_column($table->columns_all);
-
-        $tests = [
-            [
-                'code' => 501,
-                'result' => isset($request->data[0]),
-                'message' => 'create|update data from array doesn\'t implemented'
-            ],
-            [
-                'code' => 422,
-                'result' => $is_post_or_put && !$request->data,
-                'message' => 'data is required'
-            ],
-            [
-                'code' => 422,
-                'result' => $request->data && $unknown_data_col,
-                'message' => "column '{$unknown_data_col}' doesn't exists!"
-            ]
-
-        ];
-
-        return $this->tester($tests);
-    }
-
-    public function validate_request_columns()
+    private function validate_request_data(): array
     {
         $request = $this->request;
-        $restrict_column = $request->has_restrict_column($this->model->db->excluded);
-        $has_invalid_chars = !preg_match('/^[a-z0-9\.\_\,]+$/i', $request->order_by);
+        $model = $this->model;
 
-        $tests = [
+        return [
             [
-                'result' => $restrict_column,
-                'message' => "column '{$restrict_column}' isn't public"
-            ],
-            [
-                'result' => !empty($request->order_by) && $has_invalid_chars,
-                'message' => "{$request->order_by} argument has invalids chars"
+                'code' => 422,
+                'result' => $request->has_unknown_data_column($model->table->columns),
+                'message' => 'Request data has an or more invalid columns'
             ]
         ];
-
-        return $this->tester($tests);
     }
 }
