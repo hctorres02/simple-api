@@ -2,6 +2,7 @@
 
 namespace HCTorres02\SimpleAPI\Storage;
 
+use HCTorres02\SimpleAPI\Model\TableModel;
 use HCTorres02\SimpleAPI\Storage\Database;
 use stdClass;
 
@@ -11,47 +12,56 @@ class Schema
     public const SCHEMA = 'schema';
     public const SCHEMA_REFERENCES = 'schema_references';
 
+    /**
+     * @var Database
+     */
     private $db;
+
+    /**
+     * @var array
+     */
+    private $schemas;
 
     public function __construct(Database $db)
     {
         $this->db = $db;
 
-        if (!$this->get_schema(self::ALL)) {
+        if (empty($this->get_all_schemas())) {
             $this->build();
         }
+
+        $this->schemas = $this->get_all_schemas();
     }
 
-    public function get_schema(?string $table): ?stdClass
+    public function get_schema(string $table): TableModel
     {
-        if (!$table) {
-            return null;
-        }
+        return $this->schemas[$table];
+    }
 
-        $schemas = $_SESSION[self::SCHEMA] ?? null;
+    public function has_schema(?string $table): bool
+    {
+        return array_key_exists($table, $this->schemas);
+    }
 
-        if (self::ALL == $table) {
-            return !empty($schemas) ? (object) $schemas : null;
-        }
-
-        $schema = $schemas[$table] ?? null;
-        $schema_enc = json_encode($schema);
-        $schema_dec = json_decode($schema_enc);
-
-        return $schema_dec;
+    private function get_all_schemas(): ?array
+    {
+        return $_SESSION[self::SCHEMA] ?? null;
     }
 
     private function build(): void
     {
         $tables = $this->build_tables();
         $references = $this->build_references();
+        $excluded = $this->db->excluded;
 
         foreach ($tables as $table => $columns) {
-            $schema[$table] = [
+            $schema[$table] = new TableModel([
                 'name' => $table,
                 'columns' => $columns,
-                'references' => $references[$table] ?? []
-            ];
+                'alias' => $this->db->get_alias($table),
+                'references' => $references[$table] ?? [],
+                'excluded' => $excluded
+            ]);
         }
 
         $_SESSION[self::SCHEMA] = $schema;
@@ -112,15 +122,5 @@ class Schema
         }
 
         return $references;
-    }
-
-    private static function apply_alias(?string $alias, string $tb, array $cols): array
-    {
-        $columns = array_map(function ($col) use ($alias, $tb) {
-            $as = $alias ? "AS {$alias}_{$col}" : null;
-            return trim("{$tb}.{$col} {$as}");
-        }, $cols);
-
-        return $columns;
     }
 }

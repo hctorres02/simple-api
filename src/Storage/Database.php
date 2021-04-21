@@ -6,9 +6,24 @@ use PDO;
 
 class Database
 {
+    /**
+     * @var PDO
+     */
     public $pdo;
+
+    /**
+     * @var string
+     */
     public $dbname;
+
+    /**
+     * @var array
+     */
     public $aliases;
+
+    /**
+     * @var array
+     */
     public $excluded;
 
     public function __construct()
@@ -35,7 +50,12 @@ class Database
         $this->pdo = new PDO($dsn, $user, $pass, $options);
     }
 
-    public function select(Query $query)
+    public function get_alias(string $table): ?string
+    {
+        return $this->aliases[$table] ?? null;
+    }
+
+    public function select(Query $query): array
     {
         $sql = $query->get_sql();
         $binds = $query->get_binds();
@@ -47,7 +67,7 @@ class Database
         return $result;
     }
 
-    public function insert(Query $query)
+    public function insert(Query $query): int
     {
         $sql = $query->get_sql();
         $binds = $query->get_binds();
@@ -60,10 +80,10 @@ class Database
 
         $this->pdo->commit();
 
-        return $result;
+        return (int) $result;
     }
 
-    public function update(Query $query)
+    public function update(Query $query): bool
     {
         $sql = $query->get_sql();
         $binds = $query->get_binds();
@@ -79,7 +99,7 @@ class Database
         return (bool) $result;
     }
 
-    public function delete(Query $query)
+    public function delete(Query $query): bool
     {
         $sql = $query->get_sql();
         $binds = $query->get_binds();

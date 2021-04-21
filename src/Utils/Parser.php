@@ -6,7 +6,7 @@ use stdClass;
 
 class Parser
 {
-    public static function make_global(string $filename): void
+    public static function make(string $filename): void
     {
         $parser = parse_ini_file($filename, true);
         $app = new stdClass;

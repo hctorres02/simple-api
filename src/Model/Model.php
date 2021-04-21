@@ -3,124 +3,148 @@
 namespace HCTorres02\SimpleAPI\Model;
 
 use HCTorres02\SimpleAPI\Http\Request;
+use HCTorres02\SimpleAPI\Http\RequestParams;
 use HCTorres02\SimpleAPI\Storage\Database;
 use HCTorres02\SimpleAPI\Storage\Query;
 use HCTorres02\SimpleAPI\Storage\Schema;
 
 class Model
 {
-    public $db;
+    /**
+     * @var Database
+     */
+    private $db;
+
+    /**
+     * @var int|null
+     */
     public $id;
+
+    /**
+     *  @var TableModel|null
+     */
     public $table;
+
+    /**
+     *  @var TableModel|null
+     */
     public $foreign;
 
-    private $request;
+    /**
+     * @var RequestParams
+     */
+    private $params;
+
+    /**
+     * @var array
+     */
+    private $data;
 
     public function __construct(Database $db, Request $request, Schema $schemas)
     {
+        $endpoint = $request->endpoint;
+
         $this->db = $db;
-        $this->id = $request->id;
-        $this->table = $schemas->get_schema($request->table);
-        $this->foreign = $schemas->get_schema($request->foreign);
-        $this->request = $request;
-    }
+        $this->id = $endpoint->id;
+        $this->params = $request->params;
 
-    private function get_columns(): array
-    {
-        $request_columns = $this->request->get_columns();
-
-        if ($request_columns) {
-            return $request_columns;
+        if ($schemas->has_schema($endpoint->table)) {
+            $this->table = $schemas->get_schema($endpoint->table);
         }
 
-        $table_columns = $this->table->columns;
-        $excluded = $this->db->excluded;
+        if ($schemas->has_schema($endpoint->foreign)) {
+            $this->foreign = $schemas->get_schema($endpoint->foreign);
+        }
 
-        return array_diff($table_columns, $excluded);
+        if ($request->data) {
+            $this->data = $request->data;
+        }
     }
 
-    private function get_order_by()
+    private function columns(): array
     {
-        return $this->request->get_order_by() ?? "{$this->table->name}.id";
-    }
-
-    public function has_restricted_column(): ?string
-    {
-        $columns = $this->request->get_columns();
-        $excluded = $this->db->excluded;
+        $columns = $this->params->columns;
 
         if (empty($columns)) {
-            return null;
-        }
+            $columns[$this->table->name] = implode(',', $this->table->columns_filtered);
 
-        foreach ($columns as $column) {
-            $dot = strrpos($column, '.');
-            $space = strrpos($column, ' ');
-
-            if ($dot > 0) {
-                $column = substr($column, $dot + 1);
-            }
-
-            if (
-                $space > 0
-                || $column == '*'
-                || in_array($column, $excluded)
-            ) {
-                return $column;
+            if ($this->foreign) {
+                $columns[$this->foreign->name] = implode(',', $this->foreign->columns_filtered);
             }
         }
 
-        return null;
+        return $this->apply_alias($columns);
+    }
+
+    private function apply_alias(array $columns): array
+    {
+        $cols = [];
+
+        foreach ($columns as $key => $value) {
+            $table = is_numeric($key) ? $this->table->name : $key;
+            $alias = is_numeric($key) ? $this->table->alias : $this->db->get_alias($key);
+            $value = explode(',', $value);
+            $value = array_map(function ($column) use ($table, $alias) {
+                $c = "{$table}.{$column}";
+
+                if ($alias) {
+                    return "{$c} AS {$alias}_{$column}";
+                }
+
+                return $c;
+            }, $value);
+
+            $value = implode(', ', $value);
+            $cols[] = $value;
+        }
+
+        return $cols;
     }
 
     public function select(): ?array
     {
-        $columns = $this->get_columns();
-        $order = $this->get_order_by();
-
+        $columns = $this->columns();
         $query = Query::select($columns)
             ->from($this->table->name);
 
         if ($this->foreign) {
-            if (empty($this->columns)) {
-                $query->add_columns($this->foreign->columns);
-            }
-
-            $query->join($this->foreign->name)
-                ->on($this->foreign->references->{$this->table->name});
+            $ref = $this->foreign->get_reference($this->table->name);
+            $query->join($this->foreign->name)->on($ref);
         }
 
-        if (!empty($this->id)) {
+        if ($this->id) {
             $query->where_id($this->id);
         }
 
-        $query->order_by($order);
+        if (!empty($this->params->order_by)) {
+            $query->order_by($this->params->order_by);
+        }
+
         $data = $this->db->select($query);
 
         return $data;
     }
 
-    public function create()
+    public function create(): ?array
     {
         $query = Query::insert_into($this->table->name)
-            ->values($this->request->get_data());
+            ->values($this->data);
 
         $this->id = $this->db->insert($query);
-        $data = $this->select();
 
-        return $data;
+        return $this->select();
     }
 
-    public function update()
+    public function update(): bool
     {
         $data = $this->select();
 
-        if (!$data) {
+        if (empty($data)) {
             return false;
         }
 
         $query = Query::update($this->table->name)
-            ->set($this->request->get_data())
+            ->set($this->data)
             ->where_id($this->id);
 
         $this->db->update($query);
@@ -128,11 +152,11 @@ class Model
         return true;
     }
 
-    public function destroy()
+    public function destroy(): bool
     {
         $data = $this->select();
 
-        if (!$data) {
+        if (empty($data)) {
             return false;
         }
 
@@ -143,5 +167,26 @@ class Model
         $this->db->delete($query);
 
         return true;
+    }
+
+    public function has_restricted_column(): bool
+    {
+        $columns = $this->params->columns;
+
+        if (!$columns) {
+            return false;
+        }
+
+        foreach ($columns as $str) {
+            $arr = explode(',', $str);
+
+            foreach ($arr as $col) {
+                if (in_array($col, $this->db->excluded)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

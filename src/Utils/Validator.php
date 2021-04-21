@@ -50,10 +50,10 @@ class Validator
     private function validate_request(): array
     {
         $request = $this->request;
-        $id = $request->id;
-        $table = $request->table;
-        $foreign = $request->foreign;
         $method = $request->method;
+        $id = $request->endpoint->id;
+        $table = $request->endpoint->table;
+        $foreign = $request->endpoint->foreign;
 
         return [
             [
@@ -73,18 +73,20 @@ class Validator
 
     private function validate_model(): array
     {
-        $request = $this->request;
         $model = $this->model;
+        $endpoint = $this->request->endpoint;
+        $table = $endpoint->table;
+        $foreign = $endpoint->foreign;
 
         return [
             [
                 'code' => 404,
-                'result' => empty($model->table) || ($request->foreign && empty($model->foreign)),
+                'result' => empty($model->table) || ($foreign && empty($model->foreign)),
                 'message' => "Request table doesn't exists"
             ],
             [
                 'code' => 501,
-                'result' => $model->foreign && empty($model->foreign->references->{$request->table}),
+                'result' => $model->foreign && !$model->foreign->has_reference($table),
                 'message' => "Table doesn't implemented"
             ],
             [
@@ -101,11 +103,11 @@ class Validator
         $model = $this->model;
 
         return [
-            [
-                'code' => 422,
-                'result' => $request->has_unknown_data_column($model->table->columns),
-                'message' => 'Request data has an or more invalid columns'
-            ]
+            // [
+            //     'code' => 422,
+            //     'result' => $request->has_unknown_data_column($model->table->columns),
+            //     'message' => 'Request data has an or more invalid columns'
+            // ]
         ];
     }
 }
