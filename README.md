@@ -49,13 +49,13 @@ users = user
 ## Usage
 
 ##### single table
-- GET [`/{tb_name}`](https://hctorres02.gear.host/simple-api/users)
+- GET `/{tb_name}` [•](https://hctorres02.gear.host/simple-api/users)
 
 ##### single table with id
-- GET [`/{tb_name}/{id}`](https://hctorres02.gear.host/simple-api/users/1)
+- GET `/{tb_name}/{id}` [•](https://hctorres02.gear.host/simple-api/users/1)
 
 ##### join tables with id
-- GET [`/{tb_name}/{id}/{join_tb_name}`](https://hctorres02.gear.host/simple-api/users/1/posts)
+- GET `/{tb_name}/{id}/{join_tb_name}` [•](https://hctorres02.gear.host/simple-api/users/1/posts)
 
 Use HTTP verbs to `create`, `update` or `delete`.
 
@@ -63,14 +63,14 @@ Use HTTP verbs to `create`, `update` or `delete`.
 
 ### Columns selection (comma separated)
 ##### single table
-- GET [`/{tb_name}?columns={columns}`](https://hctorres02.gear.host/simple-api/users?columns=id,name)
+- GET `/{tb_name}?columns={columns}` [•](https://hctorres02.gear.host/simple-api/users?columns=id,name)
 
 ##### single table with id
-- GET [`/{tb_name}/{id}?columns={columns}`](https://hctorres02.gear.host/simple-api/users/1/?columns=id,name,email)
+- GET `/{tb_name}/{id}?columns={columns}` [•](https://hctorres02.gear.host/simple-api/users/1/?columns=id,name,email)
 
 ##### multi tables with id
 - ###### array style (recomended)
-  GET [`/{tb_name}/{id}/{join_tb_name}?columns[{tb_name}]={columns}&columns[{tb_name}]={columns}`](https://hctorres02.gear.host/simple-api/users/1/posts?columns[users]=id,name,email&columns[posts]=title,body)	
+  GET `/{tb_name}/{id}/{join_tb_name}?columns[{tb_name}]={columns}&columns[{tb_name}]={columns}` [•](https://hctorres02.gear.host/simple-api/users/1/posts?columns[users]=id,name,email&columns[posts]=title,body)	
 
 - ###### comma style
-  GET [`/{tb_name}/{id}/{join_tb_name}?columns={tb_name}.{column_name}`](https://hctorres02.gear.host/simple-api/users/1/posts?columns=users.id,users.name,users.email,posts.title,posts.body)
+  GET `/{tb_name}/{id}/{join_tb_name}?columns={tb_name}.{column_name}` [•](https://hctorres02.gear.host/simple-api/users/1/posts?columns=users.id,users.name,users.email,posts.title,posts.body)
